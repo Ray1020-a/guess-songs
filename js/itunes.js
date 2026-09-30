@@ -4,8 +4,9 @@
   const ENDPOINT = "https://itunes.apple.com/search";
   const LOOKUP = "https://itunes.apple.com/lookup";
   const SKIP_ALBUM = /karaoke|tribute|live|remix|instrumental|commentary|interview|greatest|essential|best of|number ones|hits|collection|anthology|playlist|伴奏|精選|演唱會/i;
-  const ALBUMS_PER_REQUEST = 5;
-  const MAX_ALBUMS = 80;
+  // iTunes API 大約每分鐘 20 次請求，一位歌手控制在 8 次以內
+  const ALBUMS_PER_REQUEST = 10;
+  const MAX_ALBUMS = 60;
   const EXCLUDE = /remix|live|karaoke|instrumental|acoustic|demo|a cappella|acapella|version|edit\)|mix\)|commentary|interview|伴奏|純音樂|現場/i;
 
   function buildUrl(term, country) {

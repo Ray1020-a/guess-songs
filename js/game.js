@@ -168,10 +168,30 @@
     return [first || "發行資訊不明。", second, third];
   }
 
+  // 曲目在瀏覽器存一天，避免一直重抓而撞到 iTunes 的請求上限
+  const CACHE_TTL = 24 * 60 * 60 * 1000;
+
+  function readSongCache(artist) {
+    try {
+      const cached = JSON.parse(storageGet(`guess-songs-${artist.id}`) || "null");
+      if (!cached || Date.now() - cached.savedAt > CACHE_TTL) return null;
+      // JSON 存不了 Infinity，存成 null
+      return cached.songs.map((s) => ({ ...s, rank: s.rank ?? Infinity }));
+    } catch {
+      return null;
+    }
+  }
+
   async function loadItunes(artist) {
-    const onProgress = (msg) => ($("loading-text").textContent = msg);
-    if (!itunesCache.has(artist.id)) itunesCache.set(artist.id, await window.ITunes.fetchSongs(artist, onProgress));
-    return itunesCache.get(artist.id);
+    if (itunesCache.has(artist.id)) return itunesCache.get(artist.id);
+    let songs = readSongCache(artist);
+    if (!songs) {
+      const onProgress = (msg) => ($("loading-text").textContent = msg);
+      songs = await window.ITunes.fetchSongs(artist, onProgress);
+      storageSet(`guess-songs-${artist.id}`, JSON.stringify({ savedAt: Date.now(), songs }));
+    }
+    itunesCache.set(artist.id, songs);
+    return songs;
   }
 
   // ---------- 開始 ----------
