@@ -1,6 +1,7 @@
 // 線索模式題庫。線索由淺到深排列：冷知識 → 專輯與年份 → emoji。
 // 刻意不引用歌詞，只寫背景故事。
-window.CLUE_SONGS = [
+window.CLUES = window.CLUES || {};
+window.CLUES.gaga = [
   {
     title: "Just Dance",
     album: "The Fame",

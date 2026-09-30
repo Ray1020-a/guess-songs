@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gaga 猜歌王</title>
-    <meta name="description" content="Lady Gaga 猜歌遊戲：聽前奏或看線索猜歌名。" />
+    <title>猜歌王</title>
+    <meta name="description" content="猜歌遊戲：Lady Gaga、Michael Jackson、Bruno Mars、蕭煌奇、Ariana Grande、YOASOBI，聽片段或看線索猜歌名。" />
     <meta name="theme-color" content="#0d0714" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎤</text></svg>" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -14,10 +14,15 @@
       <!-- 首頁 -->
       <section id="screen-home" class="screen active">
         <header class="hero">
-          <div class="bolt" aria-hidden="true">⚡</div>
-          <h1>Gaga 猜歌王</h1>
-          <p class="tagline">你是真正的 Little Monster 嗎？</p>
+          <div id="hero-icon" class="bolt" aria-hidden="true">⚡</div>
+          <h1 id="hero-title">Gaga 猜歌王</h1>
+          <p id="hero-tagline" class="tagline">你是真正的 Little Monster 嗎？</p>
         </header>
+
+        <section class="artists" aria-labelledby="artist-heading">
+          <h2 id="artist-heading" class="section-label">選歌手</h2>
+          <div id="artist-list" class="artist-list"></div>
+        </section>
 
         <div class="modes">
           <button class="mode-card" data-mode="audio">
@@ -29,7 +34,7 @@
           <button class="mode-card" data-mode="clue">
             <span class="mode-icon" aria-hidden="true">🔎</span>
             <span class="mode-name">線索猜歌</span>
-            <span class="mode-desc">看冷知識、專輯與 emoji 猜歌名。離線也能玩。</span>
+            <span id="clue-desc" class="mode-desc">看冷知識、專輯與 emoji 猜歌名。離線也能玩。</span>
             <span class="mode-best" data-best="clue"></span>
           </button>
         </div>
@@ -115,7 +120,12 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script src="js/songs.js"></script>
+    <script src="js/artists.js"></script>
+    <script src="js/clues/gaga.js"></script>
+    <script src="js/clues/mj.js"></script>
+    <script src="js/clues/bruno.js"></script>
+    <script src="js/clues/ariana.js"></script>
+    <script src="js/clues/yoasobi.js"></script>
     <script src="js/itunes.js"></script>
     <script src="js/game.js"></script>
   </body>

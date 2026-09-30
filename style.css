@@ -8,6 +8,7 @@
   --muted: #b7a8c4;
   --accent: #ff2d95;
   --accent-2: #b46bff;
+  --on-accent: #ffffff;
   --chrome: linear-gradient(135deg, #ffffff 0%, #c9c2d6 35%, #8f86a3 50%, #eeeaf4 70%, #a79fb8 100%);
   --good: #33d69f;
   --bad: #ff5a6e;
@@ -27,8 +28,8 @@ body {
 
 body {
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(255, 45, 149, 0.22), transparent 60%),
-    radial-gradient(900px 500px at 110% 10%, rgba(180, 107, 255, 0.2), transparent 60%),
+    radial-gradient(1200px 600px at 10% -10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, color-mix(in srgb, var(--accent-2) 20%, transparent), transparent 60%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
@@ -88,7 +89,7 @@ button:disabled {
 
 .bolt {
   font-size: 56px;
-  filter: drop-shadow(0 0 18px rgba(255, 45, 149, 0.7));
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--accent) 70%, transparent));
   animation: flicker 3s infinite;
 }
 
@@ -115,10 +116,52 @@ h1 {
   color: var(--muted);
 }
 
+.section-label {
+  margin: 0 0 8px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.artists {
+  margin-top: 24px;
+}
+
+.artist-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.artist-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.artist-chip:hover {
+  border-color: var(--accent);
+}
+
+.artist-chip[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
 .modes {
   display: grid;
   gap: 14px;
-  margin: 28px 0 20px;
+  margin: 24px 0 20px;
 }
 
 .mode-card {
@@ -211,7 +254,7 @@ h1 {
 .rounds label:has(input:checked) {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 700;
 }
 
@@ -239,8 +282,8 @@ h1 {
 
 .primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #fff;
-  box-shadow: 0 6px 24px rgba(255, 45, 149, 0.35);
+  color: var(--on-accent);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .secondary {
@@ -270,7 +313,7 @@ h1 {
   border-radius: 50%;
   background:
     repeating-conic-gradient(from 0deg, #fff 0 10deg, #9a93aa 10deg 20deg, #e6e1ee 20deg 30deg, #6f6782 30deg 40deg);
-  box-shadow: 0 0 40px rgba(255, 45, 149, 0.5), inset -12px -12px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 50%, transparent), inset -12px -12px 24px rgba(0, 0, 0, 0.4);
   animation: spin 2.4s linear infinite;
 }
 
@@ -329,7 +372,7 @@ h1 {
   height: 140px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #3a2350, #1a0f26 70%);
-  box-shadow: 0 10px 40px rgba(255, 45, 149, 0.3);
+  box-shadow: 0 10px 40px color-mix(in srgb, var(--accent) 30%, transparent);
   display: grid;
   place-items: center;
   transition: transform 0.1s ease;
@@ -387,7 +430,7 @@ h1 {
 }
 
 .step.on {
-  background: rgba(255, 45, 149, 0.2);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
   color: var(--accent);
   font-weight: 700;
 }
@@ -421,7 +464,7 @@ h1 {
   height: 24px;
   border-radius: 50%;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 13px;
   font-weight: 800;
   display: grid;
@@ -433,6 +476,15 @@ h1 {
   letter-spacing: 0.1em;
   padding-top: 8px;
   padding-bottom: 8px;
+}
+
+.clue-list li.cover img {
+  display: block;
+  width: 160px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .worth {

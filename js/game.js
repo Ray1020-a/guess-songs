@@ -8,6 +8,7 @@
   const screens = ["home", "loading", "play", "result"];
 
   const state = {
+    artist: window.ARTISTS[0],
     mode: "audio",
     totalRounds: 10,
     pool: [],
@@ -23,7 +24,7 @@
     rafId: 0,
   };
 
-  let itunesCache = null;
+  const itunesCache = new Map();
 
   // ---------- 工具 ----------
   function shuffle(arr) {
@@ -49,25 +50,28 @@
     toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
   }
 
-  function bestKey(mode, rounds) {
-    return `gaga-best-${mode}-${rounds}`;
-  }
-
-  function readBest(mode, rounds) {
+  // localStorage 在無痕模式等情況可能丟錯，讀寫都包起來
+  function storageGet(key) {
     try {
-      return Number(localStorage.getItem(bestKey(mode, rounds))) || 0;
+      return localStorage.getItem(key);
     } catch {
-      return 0;
+      return null;
     }
   }
 
-  function writeBest(mode, rounds, score) {
+  function storageSet(key, value) {
     try {
-      localStorage.setItem(bestKey(mode, rounds), String(score));
+      localStorage.setItem(key, value);
     } catch {
-      /* 無痕模式等情況存不了，忽略即可 */
+      /* 存不了就算了 */
     }
   }
+
+  const bestKey = (mode, rounds) => `guess-best-${state.artist.id}-${mode}-${rounds}`;
+  const readBest = (mode, rounds) => Number(storageGet(bestKey(mode, rounds))) || 0;
+  const writeBest = (mode, rounds, score) => storageSet(bestKey(mode, rounds), String(score));
+
+  const hasCuratedClues = (artist) => Boolean(window.CLUES && window.CLUES[artist.id]);
 
   function selectedRounds() {
     return Number(document.querySelector('input[name="rounds"]:checked').value);
@@ -81,26 +85,102 @@
     }
   }
 
+  // ---------- 選歌手 ----------
+  function selectArtist(id, { remember = true } = {}) {
+    const artist = window.ARTISTS.find((a) => a.id === id) || window.ARTISTS[0];
+    state.artist = artist;
+    if (remember) storageSet("guess-artist", artist.id);
+
+    const root = document.documentElement.style;
+    root.setProperty("--accent", artist.colors.accent);
+    root.setProperty("--accent-2", artist.colors.accent2);
+    root.setProperty("--on-accent", artist.colors.onAccent);
+
+    $("hero-icon").textContent = artist.icon;
+    $("hero-title").textContent = `${artist.short} 猜歌王`;
+    $("hero-tagline").textContent = artist.tagline;
+    document.title = `${artist.short} 猜歌王`;
+    $("clue-desc").textContent = hasCuratedClues(artist)
+      ? "看冷知識、專輯與 emoji 猜歌名。離線也能玩。"
+      : "看發行年份、專輯與封面猜歌名。需要連網。";
+
+    for (const chip of document.querySelectorAll(".artist-chip")) {
+      chip.setAttribute("aria-pressed", String(chip.dataset.artist === artist.id));
+    }
+    if (location.hash.slice(1) !== artist.id) history.replaceState(null, "", `#${artist.id}`);
+    renderBest();
+  }
+
+  function renderArtists() {
+    const box = $("artist-list");
+    for (const artist of window.ARTISTS) {
+      const chip = document.createElement("button");
+      chip.className = "artist-chip";
+      chip.dataset.artist = artist.id;
+      chip.setAttribute("aria-pressed", "false");
+      chip.innerHTML = `<span aria-hidden="true">${artist.icon}</span><span></span>`;
+      chip.lastChild.textContent = artist.name;
+      chip.addEventListener("click", () => selectArtist(artist.id));
+      box.appendChild(chip);
+    }
+  }
+
+  // ---------- 自動線索（沒有手寫題庫的歌手） ----------
+  function formatDuration(ms) {
+    const total = Math.round(ms / 1000);
+    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+  }
+
+  function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function autoClues(song) {
+    const first = [song.year && `${song.year} 年發行`, song.genre, song.durationMs && `長度 ${formatDuration(song.durationMs)}`]
+      .filter(Boolean)
+      .join("・");
+    const album = song.album.replace(/\s-\s(single|ep)$/i, "");
+    const masked = album.replace(new RegExp(escapeRegExp(song.title), "gi"), "＿＿＿");
+    const second = window.ITunes.isSingle(song.rawAlbum)
+      ? "以單曲形式發行。"
+      : `收錄於《${masked}》。`;
+    const chars = [...song.title];
+    const third = song.artwork
+      ? { image: song.artwork }
+      : `歌名共 ${chars.length} 個字，第一個字是「${chars[0]}」。`;
+    return [first || "發行資訊不明。", second, third];
+  }
+
+  async function loadItunes(artist) {
+    if (!itunesCache.has(artist.id)) itunesCache.set(artist.id, await window.ITunes.fetchSongs(artist));
+    return itunesCache.get(artist.id);
+  }
+
   // ---------- 開始 ----------
   async function startGame(mode) {
+    const artist = state.artist;
     state.mode = mode;
     state.totalRounds = selectedRounds();
 
-    if (mode === "audio") {
+    if (mode === "clue" && hasCuratedClues(artist)) {
+      state.pool = window.CLUES[artist.id].map((s) => ({ ...s, key: window.ITunes.normalizeTitle(s.title) }));
+    } else {
       show("loading");
-      $("loading-text").textContent = "正在召喚 Mother Monster……";
+      $("loading-text").textContent = `正在召喚 ${artist.name}……`;
       $("loading-actions").classList.add("hidden");
       try {
-        itunesCache = itunesCache || (await window.ITunes.fetchGagaSongs());
+        const songs = await loadItunes(artist);
+        state.pool = mode === "clue" ? songs.map((s) => ({ ...s, clues: autoClues(s) })) : songs;
       } catch (err) {
         console.error(err);
-        $("loading-text").textContent = "連不上 iTunes，抓不到試聽片段。要不要改玩線索模式？";
+        const canFallback = mode === "audio" && hasCuratedClues(artist);
+        $("loading-text").textContent = canFallback
+          ? "連不上 iTunes，抓不到試聽片段。要不要改玩線索模式？"
+          : "連不上 iTunes，抓不到歌曲資料。請確認網路連線後再試一次。";
+        $("btn-loading-clue").classList.toggle("hidden", !canFallback);
         $("loading-actions").classList.remove("hidden");
         return;
       }
-      state.pool = itunesCache;
-    } else {
-      state.pool = window.CLUE_SONGS.map((s) => ({ ...s, key: window.ITunes.normalizeTitle(s.title) }));
     }
 
     state.queue = shuffle(state.pool).slice(0, Math.min(state.totalRounds, state.pool.length));
@@ -250,9 +330,18 @@
   // ---------- 線索模式 ----------
   function addClue() {
     const clues = state.current.clues;
+    const clue = clues[state.stage];
     const li = document.createElement("li");
-    li.textContent = clues[state.stage];
-    if (state.stage === clues.length - 1) li.classList.add("emoji");
+    if (clue.image) {
+      const img = document.createElement("img");
+      img.src = clue.image;
+      img.alt = "專輯封面";
+      li.classList.add("cover");
+      li.appendChild(img);
+    } else {
+      li.textContent = clue;
+      if (state.stage === clues.length - 1) li.classList.add("emoji");
+    }
     $("clue-list").appendChild(li);
     const last = state.stage >= clues.length - 1;
     $("btn-clue").disabled = last;
@@ -314,10 +403,11 @@
 
   // ---------- 結算 ----------
   function rankTitle(ratio) {
-    if (ratio >= 0.9) return "Mother Monster 本人？👑";
-    if (ratio >= 0.7) return "資深 Little Monster 🐾";
-    if (ratio >= 0.4) return "還在練舞的 Monster 💃";
-    return "先去把《The Fame》聽完再來 📀";
+    const ranks = state.artist.ranks;
+    if (ratio >= 0.9) return ranks[0];
+    if (ratio >= 0.7) return ranks[1];
+    if (ratio >= 0.4) return ranks[2];
+    return ranks[3];
   }
 
   function finish() {
@@ -351,11 +441,11 @@
   async function share() {
     const modeName = state.mode === "audio" ? "聽歌猜歌" : "線索猜歌";
     const correctCount = state.history.filter((h) => h.correct).length;
-    const text = `我在 Gaga 猜歌王（${modeName}）拿到 ${state.score} 分，答對 ${correctCount} / ${state.totalRounds} 題！⚡ 你能贏我嗎？`;
-    const url = location.href.split("#")[0];
+    const text = `我在 ${state.artist.short} 猜歌王（${modeName}）拿到 ${state.score} 分，答對 ${correctCount} / ${state.totalRounds} 題！⚡ 你能贏我嗎？`;
+    const url = `${location.href.split("#")[0]}#${state.artist.id}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Gaga 猜歌王", text, url });
+        await navigator.share({ title: document.title, text, url });
         return;
       }
       await navigator.clipboard.writeText(`${text}\n${url}`);
@@ -404,5 +494,15 @@
     }
   });
 
-  renderBest();
+  window.addEventListener("hashchange", () => {
+    const id = location.hash.slice(1);
+    if (id && id !== state.artist.id && window.ARTISTS.some((a) => a.id === id)) {
+      quit();
+      selectArtist(id);
+    }
+  });
+
+  renderArtists();
+  const initial = location.hash.slice(1) || storageGet("guess-artist");
+  selectArtist(initial, { remember: false });
 })();
