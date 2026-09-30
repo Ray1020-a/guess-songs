@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gaga 猜歌王</title>
+    <meta name="description" content="Lady Gaga 猜歌遊戲：聽前奏或看線索猜歌名。" />
+    <meta name="theme-color" content="#0d0714" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <!-- 首頁 -->
+      <section id="screen-home" class="screen active">
+        <header class="hero">
+          <div class="bolt" aria-hidden="true">⚡</div>
+          <h1>Gaga 猜歌王</h1>
+          <p class="tagline">你是真正的 Little Monster 嗎？</p>
+        </header>
+
+        <div class="modes">
+          <button class="mode-card" data-mode="audio">
+            <span class="mode-icon" aria-hidden="true">🎧</span>
+            <span class="mode-name">聽歌猜歌</span>
+            <span class="mode-desc">從 1 秒開始聽，聽得越少分數越高。需要連網。</span>
+            <span class="mode-best" data-best="audio"></span>
+          </button>
+          <button class="mode-card" data-mode="clue">
+            <span class="mode-icon" aria-hidden="true">🔎</span>
+            <span class="mode-name">線索猜歌</span>
+            <span class="mode-desc">看冷知識、專輯與 emoji 猜歌名。離線也能玩。</span>
+            <span class="mode-best" data-best="clue"></span>
+          </button>
+        </div>
+
+        <fieldset class="rounds">
+          <legend>題數</legend>
+          <label><input type="radio" name="rounds" value="5" /> 5 題</label>
+          <label><input type="radio" name="rounds" value="10" checked /> 10 題</label>
+          <label><input type="radio" name="rounds" value="20" /> 20 題</label>
+        </fieldset>
+
+        <p class="fineprint">試聽片段由 Apple iTunes 提供，版權屬原權利人所有。</p>
+      </section>
+
+      <!-- 載入中 -->
+      <section id="screen-loading" class="screen">
+        <div class="disco" aria-hidden="true"></div>
+        <p id="loading-text">正在召喚 Mother Monster……</p>
+        <div id="loading-actions" class="loading-actions hidden">
+          <button id="btn-loading-clue" class="primary">改玩線索模式</button>
+          <button id="btn-loading-back" class="ghost">回首頁</button>
+        </div>
+      </section>
+
+      <!-- 遊戲中 -->
+      <section id="screen-play" class="screen">
+        <div class="hud">
+          <button id="btn-quit" class="ghost small" aria-label="離開遊戲">✕</button>
+          <span id="hud-round">第 1 / 10 題</span>
+          <span id="hud-score">0 分</span>
+        </div>
+        <div class="progress"><div id="progress-bar"></div></div>
+
+        <!-- 聽歌模式 -->
+        <div id="audio-panel" class="panel">
+          <button id="btn-play" class="play-btn" aria-label="播放片段">
+            <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle cx="60" cy="60" r="54" class="ring-bg" />
+              <circle cx="60" cy="60" r="54" class="ring-fg" id="ring-fg" />
+            </svg>
+            <span id="play-icon">▶</span>
+          </button>
+          <p id="clip-label" class="clip-label">播放 1 秒</p>
+          <div class="steps" id="clip-steps"></div>
+          <button id="btn-more" class="secondary">多聽一點</button>
+        </div>
+
+        <!-- 線索模式 -->
+        <div id="clue-panel" class="panel">
+          <ol id="clue-list" class="clue-list"></ol>
+          <button id="btn-clue" class="secondary">再給一個線索</button>
+        </div>
+
+        <p id="worth" class="worth">答對可得 100 分</p>
+        <div id="options" class="options"></div>
+
+        <div id="reveal" class="reveal hidden">
+          <img id="reveal-art" alt="" />
+          <div class="reveal-info">
+            <p id="reveal-verdict" class="verdict"></p>
+            <p id="reveal-title" class="reveal-title"></p>
+            <p id="reveal-meta" class="reveal-meta"></p>
+            <a id="reveal-link" target="_blank" rel="noopener">在 Apple Music 聽完整首 ↗</a>
+          </div>
+          <button id="btn-next" class="primary">下一題</button>
+        </div>
+      </section>
+
+      <!-- 結算 -->
+      <section id="screen-result" class="screen">
+        <p class="result-kicker">最終得分</p>
+        <p id="result-score" class="result-score">0</p>
+        <p id="result-title" class="result-title"></p>
+        <p id="result-sub" class="result-sub"></p>
+        <ul id="result-list" class="result-list"></ul>
+        <div class="result-actions">
+          <button id="btn-again" class="primary">再玩一次</button>
+          <button id="btn-share" class="secondary">分享成績</button>
+          <button id="btn-home" class="ghost">回首頁</button>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="js/songs.js"></script>
+    <script src="js/itunes.js"></script>
+    <script src="js/game.js"></script>
+  </body>
+</html>
