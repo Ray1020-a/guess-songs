@@ -7,7 +7,9 @@
   // iTunes API 大約每分鐘 20 次請求，一位歌手控制在 8 次以內
   const ALBUMS_PER_REQUEST = 10;
   const MAX_ALBUMS = 60;
-  const EXCLUDE = /remix|live|karaoke|instrumental|acoustic|demo|a cappella|acapella|version|edit\)|mix\)|commentary|interview|伴奏|純音樂|現場/i;
+  const EXCLUDE = /remix|live|karaoke|instrumental|acoustic|demo|a cappella|acapella|version|edit\)|mix\)|commentary|interview|dialogue|伴奏|純音樂|現場|對白/i;
+  // 短於 45 秒的多半是對白、開場或間奏，不適合拿來猜
+  const MIN_DURATION_MS = 45000;
 
   function buildUrl(term, country) {
     const params = new URLSearchParams({
@@ -87,6 +89,8 @@
       if (!artist.match.test(r.artistName || "")) continue;
       if (EXCLUDE.test(r.trackName) || /karaoke|tribute/i.test(r.collectionName || "")) continue;
       if (artist.excludeCollection && artist.excludeCollection.test(r.collectionName || "")) continue;
+      if (artist.excludeTrack && artist.excludeTrack.test(r.trackName)) continue;
+      if (r.trackTimeMillis && r.trackTimeMillis < MIN_DURATION_MS) continue;
       const key = normalizeTitle(r.trackName);
       if (!key) continue;
       const songRank = r.__fromSearch ? (seen.has(key) ? seen.get(key).rank : rank++) : Infinity;

@@ -90,8 +90,7 @@ defineClues("gaga", [
   { t: "1000 Doves", a: "Chromatica", y: 2020, f: "講在低潮時渴望有人接住自己。", e: "🕊️🕊️🕊️", deep: 1 },
   { t: "Babylon", a: "Chromatica", y: 2020, f: "專輯的最後一首，帶有 90 年代 house 與 vogue 舞曲的味道。", e: "🏛️💃", deep: 1 },
 
-  // 2022 之後與 Mayhem（2025）
-  { t: "Hold My Hand", a: "Top Gun: Maverick", y: 2022, w: "電影《捍衛戰士：獨行俠》主題曲（2022）。", f: "為一部戰鬥機飛行員電影續集所寫，入圍奧斯卡最佳原創歌曲。", e: "✈️🤝" },
+  // Mayhem（2025）
   { t: "Die With a Smile", a: "Mayhem", y: 2025, w: "2024 年發行，後來收錄於《Mayhem》（2025）。", f: "和 Bruno Mars 合唱的復古抒情歌，拿下葛萊美最佳流行組合／團體演出。", e: "💀😊" },
   { t: "Disease", a: "Mayhem", y: 2025, f: "《Mayhem》的第一支單曲，風格回到早期的暗黑電子流行。", e: "🦠🩺" },
   { t: "Abracadabra", a: "Mayhem", y: 2025, f: "2025 年葛萊美頒獎典禮播出時首度公開 MV。", e: "🪄🎩🐇" },
