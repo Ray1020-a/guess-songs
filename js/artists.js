@@ -75,3 +75,16 @@ window.ARTISTS = [
     ranks: ["Ayase 和 ikura 本人？🌙", "資深 YOASOBI 迷 📖", "剛讀完第一本 THE BOOK 📘", "先去把《THE BOOK》聽完再來 📀"],
   },
 ];
+
+// 線索題庫的精簡寫法：
+// t 歌名、a 專輯、y 專輯年份、f 冷知識、e emoji、w 自訂第二條線索（非專輯單曲或客串時用）、deep 非主打的冷門歌
+window.CLUES = {};
+window.defineClues = function (id, rows) {
+  window.CLUES[id] = rows.map((r) => ({
+    title: r.t,
+    album: r.a || "",
+    year: r.y,
+    deep: Boolean(r.deep),
+    clues: [r.f, r.w || `收錄於《${r.a}》（${r.y}）。`, r.e],
+  }));
+};

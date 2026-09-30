@@ -1,184 +1,88 @@
-// Ariana Grande 線索題庫。線索由淺到深：冷知識 → 專輯與年份 → emoji。
-window.CLUES = window.CLUES || {};
-window.CLUES.ariana = [
-  {
-    title: "The Way",
-    album: "Yours Truly",
-    year: 2013,
-    clues: [
-      "出道專輯的第一支單曲，找來 Mac Miller 合作。",
-      "收錄於《Yours Truly》（2013）。",
-      "🛣️💕",
-    ],
-  },
-  {
-    title: "Problem",
-    album: "My Everything",
-    year: 2014,
-    clues: [
-      "和 Iggy Azalea 合作，Big Sean 在副歌裡只負責用氣音低語。",
-      "收錄於《My Everything》（2014）。",
-      "❓😤",
-    ],
-  },
-  {
-    title: "Break Free",
-    album: "My Everything",
-    year: 2014,
-    clues: [
-      "和電子音樂製作人 Zedd 合作，MV 是一部太空科幻冒險。",
-      "收錄於《My Everything》（2014）。",
-      "🔓🚀👽",
-    ],
-  },
-  {
-    title: "Bang Bang",
-    album: "My Everything",
-    year: 2014,
-    clues: [
-      "Jessie J、她和 Nicki Minaj 三個人一起唱。",
-      "收錄於《My Everything》豪華版（2014）。",
-      "💥💥👩‍🎤👩‍🎤👩‍🎤",
-    ],
-  },
-  {
-    title: "Love Me Harder",
-    album: "My Everything",
-    year: 2014,
-    clues: [
-      "和 The Weeknd 的第一次合作。",
-      "收錄於《My Everything》（2014）。",
-      "❤️💪",
-    ],
-  },
-  {
-    title: "One Last Time",
-    album: "My Everything",
-    year: 2014,
-    clues: [
-      "MV 講彗星撞地球前的最後時刻；2017 年曼徹斯特演唱會事件後成為悼念歌曲。",
-      "收錄於《My Everything》（2014）。",
-      "☝️⏳☄️",
-    ],
-  },
-  {
-    title: "Dangerous Woman",
-    album: "Dangerous Woman",
-    year: 2016,
-    clues: [
-      "同名專輯的主打，專輯封面上她戴著一個兔耳造型的乳膠面具。",
-      "同名專輯的主打（2016）。",
-      "🐰⚠️👩",
-    ],
-  },
-  {
-    title: "Into You",
-    album: "Dangerous Woman",
-    year: 2016,
-    clues: [
-      "節奏強烈的電子流行，MV 裡她和男友的保鑣偷偷私奔。",
-      "收錄於《Dangerous Woman》（2016）。",
-      "🫵💘🏍️",
-    ],
-  },
-  {
-    title: "Side to Side",
-    album: "Dangerous Woman",
-    year: 2016,
-    clues: [
-      "和 Nicki Minaj 合作，MV 場景是健身房和飛輪教室。",
-      "收錄於《Dangerous Woman》（2016）。",
-      "🚴‍♀️↔️",
-    ],
-  },
-  {
-    title: "No Tears Left to Cry",
-    album: "Sweetener",
-    year: 2018,
-    clues: [
-      "曼徹斯特事件後她發行的第一首歌，MV 裡的城市是顛倒的。",
-      "收錄於《Sweetener》（2018）。",
-      "🙃😭🚫",
-    ],
-  },
-  {
-    title: "God is a woman",
-    album: "Sweetener",
-    year: 2018,
-    clues: [
-      "MV 裡 Madonna 客串，唸了一段電影《黑色追緝令》裡的經文台詞。",
-      "收錄於《Sweetener》（2018）。",
-      "🙏👩✨",
-    ],
-  },
-  {
-    title: "thank u, next",
-    album: "thank u, next",
-    year: 2019,
-    clues: [
-      "MV 輪番致敬《辣妹過招》《魅力四射》《金法尤物》《女人三十一枝花》。",
-      "同名專輯的主打（2019）。",
-      "🙏➡️💌",
-    ],
-  },
-  {
-    title: "7 rings",
-    album: "thank u, next",
-    year: 2019,
-    clues: [
-      "旋律改編自《真善美》裡的〈My Favorite Things〉。",
-      "收錄於《thank u, next》（2019）。",
-      "7️⃣💍💸",
-    ],
-  },
-  {
-    title: "break up with your girlfriend, i'm bored",
-    album: "thank u, next",
-    year: 2019,
-    clues: [
-      "專輯的最後一首歌，歌名是全專輯最長、也最直白的。",
-      "收錄於《thank u, next》（2019）。",
-      "💔👫🥱",
-    ],
-  },
-  {
-    title: "positions",
-    album: "Positions",
-    year: 2020,
-    clues: [
-      "MV 裡她扮演美國總統，在白宮裡處理公務也照顧家庭。",
-      "同名專輯的主打（2020）。",
-      "🏛️🇺🇸🔄",
-    ],
-  },
-  {
-    title: "34+35",
-    album: "Positions",
-    year: 2020,
-    clues: [
-      "Remix 版找來 Doja Cat 和 Megan Thee Stallion 加入。",
-      "收錄於《Positions》（2020）。",
-      "➕🔢😏",
-    ],
-  },
-  {
-    title: "yes, and?",
-    album: "eternal sunshine",
-    year: 2024,
-    clues: [
-      "睽違三年多的回歸單曲，走 house 舞曲風格，MV 有濃濃的舞廳（ballroom）文化味道。",
-      "收錄於《eternal sunshine》（2024）。",
-      "✅➕❓",
-    ],
-  },
-  {
-    title: "we can't be friends (wait for your love)",
-    album: "eternal sunshine",
-    year: 2024,
-    clues: [
-      "MV 靈感來自電影《王牌冤家》，講刪除關於某人的記憶。",
-      "收錄於《eternal sunshine》（2024）。",
-      "🧠🧽💔",
-    ],
-  },
-];
+// Ariana Grande 線索題庫。刻意不引用歌詞，只寫背景故事。
+defineClues("ariana", [
+  // Yours Truly（2013）
+  { t: "The Way", a: "Yours Truly", y: 2013, f: "出道專輯的第一支單曲，找來 Mac Miller 合作。", e: "🛣️💕" },
+  { t: "Honeymoon Avenue", a: "Yours Truly", y: 2013, f: "出道專輯的開場曲，把感情比喻成一條走錯方向的路。", e: "🍯🌙🛣️", deep: 1 },
+  { t: "Baby I", a: "Yours Truly", y: 2013, f: "由 Babyface 共同創作，帶有 90 年代 R&B 味道。", e: "👶👁️", deep: 1 },
+  { t: "Right There", a: "Yours Truly", y: 2013, f: "找來 Big Sean 合作的單曲。", e: "👉📍", deep: 1 },
+  { t: "Tattooed Heart", a: "Yours Truly", y: 2013, f: "50 年代復古風的抒情歌。", e: "💉❤️", deep: 1 },
+  { t: "Daydreamin'", a: "Yours Truly", y: 2013, f: "出道專輯裡的復古少女情歌。", e: "💭☁️", deep: 1 },
+  { t: "Almost Is Never Enough", y: 2013, w: "電影《The Mortal Instruments: City of Bones》原聲帶（2013）。", f: "和 The Wanted 的 Nathan Sykes 對唱。", e: "🤏🚫", deep: 1 },
+  { t: "Popular Song", y: 2012, w: "收錄於 MIKA 的《The Origin of Love》（2012）。", f: "和 MIKA 合唱，改編自音樂劇《Wicked》的〈Popular〉。", e: "🏆👸", deep: 1 },
+
+  // My Everything（2014）
+  { t: "Problem", a: "My Everything", y: 2014, f: "和 Iggy Azalea 合作，Big Sean 在副歌裡只負責用氣音低語。", e: "❓😤" },
+  { t: "Break Free", a: "My Everything", y: 2014, f: "和電子音樂製作人 Zedd 合作，MV 是一部太空科幻冒險。", e: "🔓🚀👽" },
+  { t: "Bang Bang", a: "My Everything", y: 2014, w: "收錄於《My Everything》豪華版（2014）。", f: "Jessie J、她和 Nicki Minaj 三個人一起唱。", e: "💥💥👩‍🎤👩‍🎤👩‍🎤" },
+  { t: "Love Me Harder", a: "My Everything", y: 2014, f: "和 The Weeknd 的第一次合作。", e: "❤️💪" },
+  { t: "One Last Time", a: "My Everything", y: 2014, f: "MV 講彗星撞地球前的最後時刻；2017 年曼徹斯特演唱會事件後成為悼念歌曲。", e: "☝️⏳☄️" },
+  { t: "Best Mistake", a: "My Everything", y: 2014, f: "和 Big Sean 合唱的慢歌。", e: "✅❌", deep: 1 },
+  { t: "Be My Baby", a: "My Everything", y: 2014, f: "和挪威製作人 Cashmere Cat 合作。", e: "👶🐱", deep: 1 },
+  { t: "Just a Little Bit of Your Heart", a: "My Everything", y: 2014, f: "由 Harry Styles 共同創作的鋼琴抒情歌。", e: "🤏❤️", deep: 1 },
+  { t: "Why Try", a: "My Everything", y: 2014, f: "強力抒情歌，講一對總是吵架卻分不開的情侶。", e: "🤷‍♀️💔", deep: 1 },
+  { t: "Santa Tell Me", w: "2014 年發行的聖誕單曲。", y: 2014, f: "每年聖誕節都會回到排行榜的節日歌。", e: "🎅🎄" },
+
+  // Dangerous Woman（2016）
+  { t: "Dangerous Woman", a: "Dangerous Woman", y: 2016, f: "同名專輯的主打，專輯封面上她戴著一個兔耳造型的乳膠面具。", e: "🐰⚠️👩" },
+  { t: "Into You", a: "Dangerous Woman", y: 2016, f: "節奏強烈的電子流行，MV 裡她和男友的保鑣偷偷私奔。", e: "🫵💘🏍️" },
+  { t: "Side to Side", a: "Dangerous Woman", y: 2016, f: "和 Nicki Minaj 合作，MV 場景是健身房和飛輪教室。", e: "🚴‍♀️↔️" },
+  { t: "Moonlight", a: "Dangerous Woman", y: 2016, f: "專輯的開場曲，50 年代風的浪漫情歌。", e: "🌙✨", deep: 1 },
+  { t: "Greedy", a: "Dangerous Woman", y: 2016, f: "迪斯可風的歌，很多歌迷認為是這張的隱藏神曲。", e: "🤑💃", deep: 1 },
+  { t: "Leave Me Lonely", a: "Dangerous Woman", y: 2016, f: "和 Macy Gray 合唱的藍調抒情歌。", e: "🚪😢", deep: 1 },
+  { t: "Let Me Love You", a: "Dangerous Woman", y: 2016, f: "找來 Lil Wayne 合作的 R&B 歌。", e: "🙏❤️", deep: 1 },
+  { t: "Everyday", a: "Dangerous Woman", y: 2016, f: "找來饒舌歌手 Future 合作。", e: "📅", deep: 1 },
+  { t: "Be Alright", a: "Dangerous Woman", y: 2016, f: "帶有 90 年代 house 節拍的輕快歌。", e: "✅💃", deep: 1 },
+
+  // Sweetener（2018）
+  { t: "No Tears Left to Cry", a: "Sweetener", y: 2018, f: "曼徹斯特事件後她發行的第一首歌，MV 裡的城市是顛倒的。", e: "🙃😭🚫" },
+  { t: "God is a woman", a: "Sweetener", y: 2018, f: "MV 裡 Madonna 客串，唸了一段電影《黑色追緝令》裡的經文台詞。", e: "🙏👩✨" },
+  { t: "breathin", a: "Sweetener", y: 2018, f: "寫她的焦慮症，提醒自己記得呼吸。", e: "😮‍💨🫁" },
+  { t: "raindrops (an angel cried)", a: "Sweetener", y: 2018, f: "專輯只有 30 多秒的開場曲，是一段無伴奏清唱。", e: "💧😇", deep: 1 },
+  { t: "blazed", a: "Sweetener", y: 2018, f: "和 Pharrell Williams 合作。", e: "🔥🌿", deep: 1 },
+  { t: "the light is coming", a: "Sweetener", y: 2018, f: "和 Nicki Minaj 合作，取樣了一段政治集會上的吶喊聲。", e: "💡🔜", deep: 1 },
+  { t: "R.E.M", a: "Sweetener", y: 2018, f: "歌名是睡眠的一個階段。", e: "😴💭", deep: 1 },
+  { t: "sweetener", a: "Sweetener", y: 2018, f: "同名專輯的標題曲，由 Pharrell 製作。", e: "🍬", deep: 1 },
+  { t: "pete davidson", a: "Sweetener", y: 2018, f: "以她當時未婚夫的名字命名的短曲。", e: "💍👱‍♂️", deep: 1 },
+  { t: "goodnight n go", a: "Sweetener", y: 2018, f: "引用 Imogen Heap 的〈Goodnight and Go〉。", e: "🌙👋", deep: 1 },
+  { t: "get well soon", a: "Sweetener", y: 2018, f: "專輯最後一首，結尾的靜音讓總長度剛好是 5:22，紀念曼徹斯特事件發生的 5 月 22 日。", e: "🤒🙏", deep: 1 },
+
+  // thank u, next（2019）
+  { t: "thank u, next", a: "thank u, next", y: 2019, f: "MV 輪番致敬《辣妹過招》《魅力四射》《金法尤物》《女人三十一枝花》。", e: "🙏➡️💌" },
+  { t: "7 rings", a: "thank u, next", y: 2019, f: "旋律改編自《真善美》裡的〈My Favorite Things〉。", e: "7️⃣💍💸" },
+  { t: "break up with your girlfriend, i'm bored", a: "thank u, next", y: 2019, f: "專輯的最後一首歌，歌名是全專輯最長、也最直白的。", e: "💔👫🥱" },
+  { t: "imagine", a: "thank u, next", y: 2019, f: "專輯的開場曲，副歌尾巴有一段高音哨音。", e: "💭🌈", deep: 1 },
+  { t: "needy", a: "thank u, next", y: 2019, f: "坦白承認自己在感情裡很黏人的慢歌。", e: "🥺", deep: 1 },
+  { t: "NASA", a: "thank u, next", y: 2019, f: "開頭借用太空人的語音，歌裡要對方給她一點「空間」。", e: "🚀🌌", deep: 1 },
+  { t: "bloodline", a: "thank u, next", y: 2019, f: "帶有銅管樂的輕快歌，表明不打算和對方長久走下去。", e: "🩸🧬", deep: 1 },
+  { t: "fake smile", a: "thank u, next", y: 2019, f: "取樣了 Wendy Rene 的〈After Laughter (Comes Tears)〉。", e: "🙂🎭", deep: 1 },
+  { t: "bad idea", a: "thank u, next", y: 2019, f: "講明知不該，還是想用新戀情麻痺自己。", e: "💡❌", deep: 1 },
+  { t: "make up", a: "thank u, next", y: 2019, f: "和吵架後和好有關的俏皮歌。", e: "💄🤝", deep: 1 },
+  { t: "ghostin", a: "thank u, next", y: 2019, f: "許多人認為是寫給過世前男友 Mac Miller 的歌。", e: "👻💭", deep: 1 },
+  { t: "in my head", a: "thank u, next", y: 2019, f: "講愛上的其實是自己想像出來的那個人。", e: "🧠💭", deep: 1 },
+  { t: "Boyfriend", w: "2019 年發行的合作單曲。", y: 2019, f: "和雙人組 Social House 合作。", e: "👦🚫", deep: 1 },
+  { t: "Don't Call Me Angel", w: "2019 年發行，電影《霹靂嬌娃》原聲帶。", y: 2019, f: "和 Miley Cyrus、Lana Del Rey 三人合唱。", e: "😇🚫📞" },
+  { t: "Stuck with U", w: "2020 年發行的合作單曲。", y: 2020, f: "和 Justin Bieber 在疫情居家期間合作，收益捐作第一線人員子女的獎學金。", e: "🏠🫂" },
+
+  // Positions（2020）
+  { t: "positions", a: "Positions", y: 2020, f: "MV 裡她扮演美國總統，在白宮裡處理公務也照顧家庭。", e: "🏛️🇺🇸🔄" },
+  { t: "34+35", a: "Positions", y: 2020, f: "Remix 版找來 Doja Cat 和 Megan Thee Stallion 加入。", e: "➕🔢😏" },
+  { t: "shut up", a: "Positions", y: 2020, f: "專輯的開場曲，用弦樂搭配她的招牌高音。", e: "🤐", deep: 1 },
+  { t: "motive", a: "Positions", y: 2020, f: "和 Doja Cat 合作。", e: "🤔🎯", deep: 1 },
+  { t: "off the table", a: "Positions", y: 2020, f: "和 The Weeknd 合唱的抒情歌。", e: "🍽️🚫", deep: 1 },
+  { t: "safety net", a: "Positions", y: 2020, f: "和 Ty Dolla $ign 合作。", e: "🕸️🛟", deep: 1 },
+  { t: "my hair", a: "Positions", y: 2020, f: "歌裡有大段哨音，講只有親近的人才能碰她的頭髮。", e: "💇‍♀️🎶", deep: 1 },
+  { t: "love language", a: "Positions", y: 2020, f: "帶有弦樂的 R&B 歌。", e: "🗣️❤️", deep: 1 },
+  { t: "pov", a: "Positions", y: 2020, f: "專輯的最後一首，希望能用對方的視角看自己。", e: "👀🫵", deep: 1 },
+
+  // eternal sunshine（2024）
+  { t: "yes, and?", a: "eternal sunshine", y: 2024, f: "睽違三年多的回歸單曲，走 house 舞曲風格，MV 有濃濃的舞廳（ballroom）文化味道。", e: "✅➕❓" },
+  { t: "we can't be friends (wait for your love)", a: "eternal sunshine", y: 2024, f: "MV 靈感來自電影《王牌冤家》，講刪除關於某人的記憶。", e: "🧠🧽💔" },
+  { t: "intro (end of the world)", a: "eternal sunshine", y: 2024, f: "專輯不到兩分鐘的開場短曲。", e: "🌍🔚", deep: 1 },
+  { t: "bye", a: "eternal sunshine", y: 2024, f: "唱的是收拾行李、離開一段感情。", e: "👋🧳", deep: 1 },
+  { t: "don't wanna break up again", a: "eternal sunshine", y: 2024, f: "講一再分手又復合的疲憊。", e: "💔🔁", deep: 1 },
+  { t: "eternal sunshine", a: "eternal sunshine", y: 2024, f: "同名專輯的標題曲。", e: "☀️♾️", deep: 1 },
+  { t: "supernatural", a: "eternal sunshine", y: 2024, f: "帶有 90 年代 R&B 氛圍，形容愛到像被超自然力量控制。", e: "👻💫", deep: 1 },
+  { t: "the boy is mine", a: "eternal sunshine", y: 2024, f: "專輯單曲，MV 由 Penn Badgley 演出。", e: "👦🫵", deep: 1 },
+  { t: "ordinary things", a: "eternal sunshine", y: 2024, f: "專輯最後一首，結尾是她外婆的一段話。", e: "👵☕", deep: 1 },
+  { t: "Popular", w: "電影《魔法壞女巫》原聲帶（2024）。", y: 2024, f: "她在電影裡飾演 Glinda 時唱的歌。", e: "🫧👑💅" },
+]);

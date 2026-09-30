@@ -1,295 +1,105 @@
-// 線索模式題庫。線索由淺到深排列：冷知識 → 專輯與年份 → emoji。
-// 刻意不引用歌詞，只寫背景故事。
-window.CLUES = window.CLUES || {};
-window.CLUES.gaga = [
-  {
-    title: "Just Dance",
-    album: "The Fame",
-    year: 2008,
-    clues: [
-      "她的出道單曲，找來 Colby O'Donis 合唱，描寫在派對上喝到有點茫的狀態。",
-      "收錄於《The Fame》（2008）。",
-      "🕺🍸💿",
-    ],
-  },
-  {
-    title: "Poker Face",
-    album: "The Fame",
-    year: 2008,
-    clues: [
-      "拿下葛萊美「最佳舞曲錄音」，也是 2009 年全球最暢銷的單曲之一。",
-      "收錄於《The Fame》（2008）。",
-      "🃏😐♠️",
-    ],
-  },
-  {
-    title: "Paparazzi",
-    album: "The Fame",
-    year: 2008,
-    clues: [
-      "MV 裡她被男友從陽台推下去，之後坐著輪椅、戴著金屬支架復出。",
-      "收錄於《The Fame》（2008）。",
-      "📸🏃‍♀️🌟",
-    ],
-  },
-  {
-    title: "LoveGame",
-    album: "The Fame",
-    year: 2008,
-    clues: [
-      "MV 在地鐵站與停車場拍攝，歌名是把兩個英文單字黏在一起。",
-      "收錄於《The Fame》（2008）。",
-      "❤️🎮",
-    ],
-  },
-  {
-    title: "Bad Romance",
-    album: "The Fame Monster",
-    year: 2009,
-    clues: [
-      "MV 場景是一間白色澡堂，拿下 2010 年 MTV VMA 年度影片。",
-      "收錄於《The Fame Monster》（2009）。",
-      "😈💘",
-    ],
-  },
-  {
-    title: "Telephone",
-    album: "The Fame Monster",
-    year: 2009,
-    clues: [
-      "和碧昂絲合作，MV 從女子監獄開始，劇情接續〈Paparazzi〉。",
-      "收錄於《The Fame Monster》（2009）。",
-      "📞🙅‍♀️",
-    ],
-  },
-  {
-    title: "Alejandro",
-    album: "The Fame Monster",
-    year: 2009,
-    clues: [
-      "帶有拉丁風情，歌名是一個西班牙男生的名字。",
-      "收錄於《The Fame Monster》（2009）。",
-      "💃🇪🇸👨",
-    ],
-  },
-  {
-    title: "Born This Way",
-    album: "Born This Way",
-    year: 2011,
-    clues: [
-      "發行後 5 天內在 iTunes 賣破百萬，成為 LGBTQ+ 族群的代表性頌歌。",
-      "同名專輯的主打單曲（2011）。",
-      "👶🌈🦄",
-    ],
-  },
-  {
-    title: "Judas",
-    album: "Born This Way",
-    year: 2011,
-    clues: [
-      "在復活節前後推出，引用聖經人物而引發宗教團體抗議。",
-      "收錄於《Born This Way》（2011）。",
-      "✝️💋🪙",
-    ],
-  },
-  {
-    title: "The Edge of Glory",
-    album: "Born This Way",
-    year: 2011,
-    clues: [
-      "E Street Band 薩克斯風手 Clarence Clemons 在這首歌留下他生前最後的錄音之一。",
-      "收錄於《Born This Way》（2011）。",
-      "🎷🏆⛰️",
-    ],
-  },
-  {
-    title: "You and I",
-    album: "Born This Way",
-    year: 2011,
-    clues: [
-      "Queen 吉他手 Brian May 親自彈奏，MV 裡她化身男性分身 Jo Calderone。",
-      "收錄於《Born This Way》（2011）。",
-      "🫵➕🙋‍♀️🎸",
-    ],
-  },
-  {
-    title: "Marry the Night",
-    album: "Born This Way",
-    year: 2011,
-    clues: [
-      "MV 長達約 14 分鐘，由她親自執導，講述被唱片公司解約後重新站起來。",
-      "收錄於《Born This Way》（2011）。",
-      "💍🌃",
-    ],
-  },
-  {
-    title: "Bloody Mary",
-    album: "Born This Way",
-    year: 2011,
-    clues: [
-      "原本不是單曲，2022 年因《星期三》的跳舞片段在 TikTok 爆紅而翻紅。",
-      "收錄於《Born This Way》（2011）。",
-      "🩸👸🍹",
-    ],
-  },
-  {
-    title: "Applause",
-    album: "Artpop",
-    year: 2013,
-    clues: [
-      "專輯的第一支單曲，主題是她對觀眾喝采的依賴。",
-      "收錄於《Artpop》（2013）。",
-      "👏👏👏",
-    ],
-  },
-  {
-    title: "Til It Happens to You",
-    album: "The Hunting Ground（紀錄片原聲）",
-    year: 2015,
-    clues: [
-      "和 Diane Warren 合寫，為校園性侵議題紀錄片而作，入圍奧斯卡最佳原創歌曲。",
-      "紀錄片《The Hunting Ground》主題曲（2015）。",
-      "⏳➡️🫵",
-    ],
-  },
-  {
-    title: "Perfect Illusion",
-    album: "Joanne",
-    year: 2016,
-    clues: [
-      "專輯的第一支單曲，找來 Tame Impala 的 Kevin Parker 共同製作。",
-      "收錄於《Joanne》（2016）。",
-      "✨🎭",
-    ],
-  },
-  {
-    title: "Million Reasons",
-    album: "Joanne",
-    year: 2016,
-    clues: [
-      "她在 2017 年超級盃中場秀唱這首抒情歌，唱到一半走下舞台擁抱歌迷。",
-      "收錄於《Joanne》（2016）。",
-      "💯💯💯🙏",
-    ],
-  },
-  {
-    title: "John Wayne",
-    album: "Joanne",
-    year: 2016,
-    clues: [
-      "歌名借用一位美國西部片傳奇男星的名字。",
-      "收錄於《Joanne》（2016）。",
-      "🤠🐎",
-    ],
-  },
-  {
-    title: "Shallow",
-    album: "A Star Is Born",
-    year: 2018,
-    clues: [
-      "和 Bradley Cooper 對唱，拿下奧斯卡最佳原創歌曲。",
-      "電影《一個巨星的誕生》原聲帶（2018）。",
-      "🌊🏊‍♀️⬇️",
-    ],
-  },
-  {
-    title: "Always Remember Us This Way",
-    album: "A Star Is Born",
-    year: 2018,
-    clues: [
-      "電影中 Ally 在舞台上坐在鋼琴前演唱的抒情歌。",
-      "電影《一個巨星的誕生》原聲帶（2018）。",
-      "🧠📸💑",
-    ],
-  },
-  {
-    title: "I'll Never Love Again",
-    album: "A Star Is Born",
-    year: 2018,
-    clues: [
-      "電影的最後一首歌，在追悼演出中唱出。",
-      "電影《一個巨星的誕生》原聲帶（2018）。",
-      "🚫❤️🔁",
-    ],
-  },
-  {
-    title: "Stupid Love",
-    album: "Chromatica",
-    year: 2020,
-    clues: [
-      "MV 全程用 iPhone 11 Pro 拍攝，各個部落在沙漠裡跳舞。",
-      "收錄於《Chromatica》（2020）。",
-      "🤪💗",
-    ],
-  },
-  {
-    title: "Rain on Me",
-    album: "Chromatica",
-    year: 2020,
-    clues: [
-      "和 Ariana Grande 合作，拿下葛萊美最佳流行組合／團體演出。",
-      "收錄於《Chromatica》（2020）。",
-      "🌧️🗡️👯‍♀️",
-    ],
-  },
-  {
-    title: "Sour Candy",
-    album: "Chromatica",
-    year: 2020,
-    clues: [
-      "和 BLACKPINK 合作，是整張專輯最短的歌之一。",
-      "收錄於《Chromatica》（2020）。",
-      "🍬😖",
-    ],
-  },
-  {
-    title: "911",
-    album: "Chromatica",
-    year: 2020,
-    clues: [
-      "寫的是她服用的抗精神病藥物 olanzapine，MV 是一場超現實的夢境。",
-      "收錄於《Chromatica》（2020）。",
-      "🚑☎️💊",
-    ],
-  },
-  {
-    title: "Hold My Hand",
-    album: "Top Gun: Maverick",
-    year: 2022,
-    clues: [
-      "為一部戰鬥機飛行員電影續集所寫，入圍奧斯卡最佳原創歌曲。",
-      "電影《捍衛戰士：獨行俠》主題曲（2022）。",
-      "✈️🤝",
-    ],
-  },
-  {
-    title: "Die With a Smile",
-    album: "Mayhem",
-    year: 2024,
-    clues: [
-      "和 Bruno Mars 合唱的復古抒情歌，拿下葛萊美最佳流行組合／團體演出。",
-      "2024 年發行，後來收錄於《Mayhem》（2025）。",
-      "💀😊",
-    ],
-  },
-  {
-    title: "Disease",
-    album: "Mayhem",
-    year: 2024,
-    clues: [
-      "《Mayhem》的第一支單曲，風格回到早期的暗黑電子流行。",
-      "收錄於《Mayhem》（2025）。",
-      "🦠🩺",
-    ],
-  },
-  {
-    title: "Abracadabra",
-    album: "Mayhem",
-    year: 2025,
-    clues: [
-      "2025 年葛萊美頒獎典禮播出時首度公開 MV。",
-      "收錄於《Mayhem》（2025）。",
-      "🪄🎩🐇",
-    ],
-  },
-];
+// Lady Gaga 線索題庫。刻意不引用歌詞，只寫背景故事。
+defineClues("gaga", [
+  // The Fame（2008）
+  { t: "Just Dance", a: "The Fame", y: 2008, f: "她的出道單曲，找來 Colby O'Donis 合唱，描寫在派對上喝到有點茫的狀態。", e: "🕺🍸💿" },
+  { t: "Poker Face", a: "The Fame", y: 2008, f: "拿下葛萊美「最佳舞曲錄音」，也是 2009 年全球最暢銷的單曲之一。", e: "🃏😐♠️" },
+  { t: "Paparazzi", a: "The Fame", y: 2008, f: "MV 裡她被男友從陽台推下去，之後坐著輪椅、戴著金屬支架復出。", e: "📸🏃‍♀️🌟" },
+  { t: "LoveGame", a: "The Fame", y: 2008, f: "MV 在地鐵站與停車場拍攝，歌名是把兩個英文單字黏在一起。", e: "❤️🎮" },
+  { t: "Eh, Eh (Nothing Else I Can Say)", a: "The Fame", y: 2008, f: "《The Fame》裡少見的輕快小情歌，只在部分國家發行成單曲。", e: "😗🤷‍♀️" },
+  { t: "Beautiful, Dirty, Rich", a: "The Fame", y: 2008, f: "歌名由三個形容詞組成，諷刺紐約下城那群不愁吃穿的派對咖。", e: "💄💸🥂", deep: 1 },
+  { t: "Boys Boys Boys", a: "The Fame", y: 2008, f: "她說這首歌是 Mötley Crüe〈Girls, Girls, Girls〉的女生版。", e: "👦👦👦", deep: 1 },
+  { t: "Starstruck", a: "The Fame", y: 2008, f: "找來 Space Cowboy 和 Flo Rida 客串的電子舞曲。", e: "⭐😵", deep: 1 },
+  { t: "Brown Eyes", a: "The Fame", y: 2008, f: "《The Fame》裡少見的抒情搖滾，她說深受 Queen 影響。", e: "🟤👀", deep: 1 },
+  { t: "Paper Gangsta", a: "The Fame", y: 2008, f: "寫她早年被唱片圈人士開空頭支票的經驗。", e: "📄🕴️", deep: 1 },
+  { t: "Money Honey", a: "The Fame", y: 2008, f: "講「真正的愛比錢重要」的輕快舞曲。", e: "💰🍯", deep: 1 },
+  { t: "Summerboy", a: "The Fame", y: 2008, f: "講夏日短暫戀情的輕快流行歌，帶點 80 年代新浪潮味道。", e: "☀️👦", deep: 1 },
+  { t: "The Fame", a: "The Fame", y: 2008, f: "同名專輯的標題曲，講對名氣本身的渴望。", e: "🌟📸", deep: 1 },
+
+  // The Fame Monster（2009）
+  { t: "Bad Romance", a: "The Fame Monster", y: 2009, f: "MV 場景是一間白色澡堂，拿下 2010 年 MTV VMA 年度影片。", e: "😈💘" },
+  { t: "Telephone", a: "The Fame Monster", y: 2009, f: "和碧昂絲合作，MV 從女子監獄開始，劇情接續〈Paparazzi〉。", e: "📞🙅‍♀️" },
+  { t: "Alejandro", a: "The Fame Monster", y: 2009, f: "帶有拉丁風情，歌名是一個西班牙男生的名字。", e: "💃🇪🇸👨" },
+  { t: "Monster", a: "The Fame Monster", y: 2009, f: "寫一個讓人又愛又怕的男人，把他比喻成把心吃掉的怪物。", e: "👹❤️", deep: 1 },
+  { t: "Speechless", a: "The Fame Monster", y: 2009, f: "寫給需要動心臟手術、卻遲遲不肯開刀的父親。", e: "😶👨❤️‍🩹", deep: 1 },
+  { t: "Dance in the Dark", a: "The Fame Monster", y: 2009, f: "歌裡點名 Marilyn Monroe、Judy Garland、黛安娜王妃等命運坎坷的女性。", e: "💃🌑", deep: 1 },
+  { t: "So Happy I Could Die", a: "The Fame Monster", y: 2009, f: "大量使用 Auto-Tune 的迷幻電子歌，是專輯裡最夢幻的一首。", e: "😊💀", deep: 1 },
+  { t: "Teeth", a: "The Fame Monster", y: 2009, f: "專輯的最後一首，帶有福音與藍調的節奏。", e: "🦷", deep: 1 },
+
+  // Born This Way（2011）
+  { t: "Born This Way", a: "Born This Way", y: 2011, f: "發行後 5 天內在 iTunes 賣破百萬，成為 LGBTQ+ 族群的代表性頌歌。", e: "👶🌈🦄" },
+  { t: "Judas", a: "Born This Way", y: 2011, f: "在復活節前後推出，引用聖經人物而引發宗教團體抗議。", e: "✝️💋🪙" },
+  { t: "The Edge of Glory", a: "Born This Way", y: 2011, f: "E Street Band 薩克斯風手 Clarence Clemons 在這首歌留下他生前最後的錄音之一。", e: "🎷🏆⛰️" },
+  { t: "You and I", a: "Born This Way", y: 2011, f: "Queen 吉他手 Brian May 親自彈奏，MV 裡她化身男性分身 Jo Calderone。", e: "🫵➕🙋‍♀️🎸" },
+  { t: "Marry the Night", a: "Born This Way", y: 2011, f: "MV 長達約 14 分鐘，由她親自執導，講述被唱片公司解約後重新站起來。", e: "💍🌃" },
+  { t: "Bloody Mary", a: "Born This Way", y: 2011, f: "原本不是單曲，2022 年因《星期三》的跳舞片段在 TikTok 爆紅而翻紅。", e: "🩸👸🍹", deep: 1 },
+  { t: "Americano", a: "Born This Way", y: 2011, f: "帶有墨西哥街頭樂隊風格，觸及移民與同性婚姻議題。", e: "🌮💃🇲🇽", deep: 1 },
+  { t: "Scheiße", a: "Born This Way", y: 2011, f: "歌詞大量使用她自創、聽起來很像德文的「假德文」。", e: "🇩🇪🤐", deep: 1 },
+  { t: "Hair", a: "Born This Way", y: 2011, f: "把頭髮當成自我認同的象徵。", e: "💇‍♀️🆓", deep: 1 },
+  { t: "Fashion of His Love", a: "Born This Way", y: 2011, f: "致敬已故設計師 Alexander McQueen。", e: "👗❤️🕊️", deep: 1 },
+  { t: "Highway Unicorn (Road to Love)", a: "Born This Way", y: 2011, f: "公路搖滾風的電子歌，主角是一隻在公路上奔馳的獨角獸。", e: "🛣️🦄", deep: 1 },
+  { t: "Bad Kids", a: "Born This Way", y: 2011, f: "寫給覺得自己是「壞孩子」的歌迷。", e: "😈🧒", deep: 1 },
+  { t: "Heavy Metal Lover", a: "Born This Way", y: 2011, f: "暗黑工業電子風的情歌，講對壞男孩的迷戀。", e: "🤘❤️", deep: 1 },
+  { t: "Electric Chapel", a: "Born This Way", y: 2011, f: "結合教堂意象與重金屬吉他的舞曲。", e: "⚡⛪", deep: 1 },
+
+  // Artpop（2013）
+  { t: "Applause", a: "Artpop", y: 2013, f: "專輯的第一支單曲，主題是她對觀眾喝采的依賴。", e: "👏👏👏" },
+  { t: "G.U.Y.", a: "Artpop", y: 2013, f: "MV 在赫氏古堡（Hearst Castle）拍攝，歌名是「Girl Under You」的縮寫。", e: "👩⬇️👨", deep: 1 },
+  { t: "Aura", a: "Artpop", y: 2013, f: "原本標題叫〈Burqa〉，片段曾出現在電影《Machete Kills》的預告裡。", e: "🧕🔪", deep: 1 },
+  { t: "Venus", a: "Artpop", y: 2013, f: "以羅馬愛神與太陽系的金星為主題的太空迪斯可。", e: "🪐🐚", deep: 1 },
+  { t: "Donatella", a: "Artpop", y: 2013, f: "寫給時尚設計師 Donatella Versace 的歌。", e: "👱‍♀️👜", deep: 1 },
+  { t: "MANiCURE", a: "Artpop", y: 2013, f: "講美甲與自我打理的搖滾電子歌。", e: "💅", deep: 1 },
+  { t: "Dope", a: "Artpop", y: 2013, f: "只有鋼琴伴奏的抒情歌，談成癮與依賴。", e: "💉🎹", deep: 1 },
+  { t: "Gypsy", a: "Artpop", y: 2013, f: "講在世界巡迴中四處漂泊，把整個世界當成家。", e: "🌍🧳", deep: 1 },
+  { t: "Swine", a: "Artpop", y: 2013, f: "暴烈的電子搖滾，被外界解讀為對性侵者的控訴。", e: "🐷😡", deep: 1 },
+  { t: "Artpop", a: "Artpop", y: 2013, f: "同名專輯的標題曲，主張把流行音樂當成藝術品。", e: "🎨🎵", deep: 1 },
+
+  // Joanne（2016）與同時期
+  { t: "Perfect Illusion", a: "Joanne", y: 2016, f: "專輯的第一支單曲，找來 Tame Impala 的 Kevin Parker 共同製作。", e: "✨🎭" },
+  { t: "Million Reasons", a: "Joanne", y: 2016, f: "她在 2017 年超級盃中場秀唱這首抒情歌，唱到一半走下舞台擁抱歌迷。", e: "💯💯💯🙏" },
+  { t: "John Wayne", a: "Joanne", y: 2016, f: "歌名借用一位美國西部片傳奇男星的名字。", e: "🤠🐎" },
+  { t: "Joanne", a: "Joanne", y: 2016, f: "寫給 19 歲就因紅斑性狼瘡過世、她從未見過的姑姑。", e: "👩🕊️", deep: 1 },
+  { t: "Diamond Heart", a: "Joanne", y: 2016, f: "專輯的開場曲，搖滾味十足。", e: "💎❤️", deep: 1 },
+  { t: "A-Yo", a: "Joanne", y: 2016, f: "帶有鄉村與搖滾味的輕快派對歌，拍手節奏很洗腦。", e: "🤠🔥", deep: 1 },
+  { t: "Dancin' in Circles", a: "Joanne", y: 2016, f: "和 Beck 共同創作。", e: "💃⭕", deep: 1 },
+  { t: "Sinner's Prayer", a: "Joanne", y: 2016, f: "和 Father John Misty 共同創作的鄉村風歌曲。", e: "🙏😈", deep: 1 },
+  { t: "Hey Girl", a: "Joanne", y: 2016, f: "和 Florence Welch 合唱，歌頌女生之間的互相扶持。", e: "👭", deep: 1 },
+  { t: "Angel Down", a: "Joanne", y: 2016, f: "寫 2012 年非裔少年 Trayvon Martin 遭槍殺的事件。", e: "😇⬇️", deep: 1 },
+  { t: "Grigio Girls", a: "Joanne", y: 2016, f: "寫給罹患癌症的好友，歌名來自一種義大利白酒。", e: "🍷👯‍♀️", deep: 1 },
+  { t: "The Cure", w: "2017 年發行的單曲，沒有收錄在正規專輯。", y: 2017, f: "她在 2017 年 Coachella 音樂節上首度公開表演。", e: "💊❤️‍🩹" },
+  { t: "Til It Happens to You", a: "The Hunting Ground", y: 2015, w: "紀錄片《The Hunting Ground》主題曲（2015）。", f: "和 Diane Warren 合寫，為校園性侵議題紀錄片而作，入圍奧斯卡最佳原創歌曲。", e: "⏳➡️🫵", deep: 1 },
+
+  // A Star Is Born（2018）
+  { t: "Shallow", a: "A Star Is Born", y: 2018, w: "電影《一個巨星的誕生》原聲帶（2018）。", f: "和 Bradley Cooper 對唱，拿下奧斯卡最佳原創歌曲。", e: "🌊🏊‍♀️⬇️" },
+  { t: "Always Remember Us This Way", a: "A Star Is Born", y: 2018, w: "電影《一個巨星的誕生》原聲帶（2018）。", f: "電影中 Ally 在舞台上坐在鋼琴前演唱的抒情歌。", e: "🧠📸💑" },
+  { t: "I'll Never Love Again", a: "A Star Is Born", y: 2018, w: "電影《一個巨星的誕生》原聲帶（2018）。", f: "電影的最後一首歌，在追悼演出中唱出。", e: "🚫❤️🔁" },
+  { t: "Look What I Found", a: "A Star Is Born", y: 2018, w: "電影《一個巨星的誕生》原聲帶（2018）。", f: "原聲帶裡的輕快情歌，講在意想不到的地方找到愛。", e: "🔍❤️", deep: 1 },
+  { t: "Why Did You Do That?", a: "A Star Is Born", y: 2018, w: "電影《一個巨星的誕生》原聲帶（2018）。", f: "電影中 Ally 轉型成流行歌手後在節目上表演的舞曲。", e: "🤨💃", deep: 1 },
+
+  // Chromatica（2020）
+  { t: "Stupid Love", a: "Chromatica", y: 2020, f: "MV 全程用 iPhone 11 Pro 拍攝，各個部落在沙漠裡跳舞。", e: "🤪💗" },
+  { t: "Rain on Me", a: "Chromatica", y: 2020, f: "和 Ariana Grande 合作，拿下葛萊美最佳流行組合／團體演出。", e: "🌧️🗡️👯‍♀️" },
+  { t: "Sour Candy", a: "Chromatica", y: 2020, f: "和 BLACKPINK 合作，是整張專輯最短的歌之一。", e: "🍬😖" },
+  { t: "911", a: "Chromatica", y: 2020, f: "寫的是她服用的抗精神病藥物 olanzapine，MV 是一場超現實的夢境。", e: "🚑☎️💊" },
+  { t: "Alice", a: "Chromatica", y: 2020, f: "專輯正式開場的舞曲，借用《愛麗絲夢遊仙境》的意象。", e: "🐇🕳️", deep: 1 },
+  { t: "Free Woman", a: "Chromatica", y: 2020, f: "她說這首歌寫的是性侵倖存者重新找回自由的自己。", e: "🆓👩", deep: 1 },
+  { t: "Fun Tonight", a: "Chromatica", y: 2020, f: "寫在名氣與感情裡怎樣都開心不起來的心情。", e: "🎉😔", deep: 1 },
+  { t: "Enigma", a: "Chromatica", y: 2020, f: "歌名和她在拉斯維加斯駐唱秀的名稱一樣。", e: "❓🎰", deep: 1 },
+  { t: "Replay", a: "Chromatica", y: 2020, f: "講創傷在腦中不斷重播。", e: "🔁🧠", deep: 1 },
+  { t: "Plastic Doll", a: "Chromatica", y: 2020, f: "拿芭比娃娃來自比。", e: "🎎💅", deep: 1 },
+  { t: "Sine From Above", a: "Chromatica", y: 2020, f: "和 Elton John 合作的歌。", e: "🎹🌊📈", deep: 1 },
+  { t: "1000 Doves", a: "Chromatica", y: 2020, f: "講在低潮時渴望有人接住自己。", e: "🕊️🕊️🕊️", deep: 1 },
+  { t: "Babylon", a: "Chromatica", y: 2020, f: "專輯的最後一首，帶有 90 年代 house 與 vogue 舞曲的味道。", e: "🏛️💃", deep: 1 },
+
+  // 2022 之後與 Mayhem（2025）
+  { t: "Hold My Hand", a: "Top Gun: Maverick", y: 2022, w: "電影《捍衛戰士：獨行俠》主題曲（2022）。", f: "為一部戰鬥機飛行員電影續集所寫，入圍奧斯卡最佳原創歌曲。", e: "✈️🤝" },
+  { t: "Die With a Smile", a: "Mayhem", y: 2025, w: "2024 年發行，後來收錄於《Mayhem》（2025）。", f: "和 Bruno Mars 合唱的復古抒情歌，拿下葛萊美最佳流行組合／團體演出。", e: "💀😊" },
+  { t: "Disease", a: "Mayhem", y: 2025, f: "《Mayhem》的第一支單曲，風格回到早期的暗黑電子流行。", e: "🦠🩺" },
+  { t: "Abracadabra", a: "Mayhem", y: 2025, f: "2025 年葛萊美頒獎典禮播出時首度公開 MV。", e: "🪄🎩🐇" },
+  { t: "Perfect Celebrity", a: "Mayhem", y: 2025, f: "暗黑的工業搖滾，談名人被大眾消費。", e: "🌟🧟", deep: 1 },
+  { t: "Vanish into You", a: "Mayhem", y: 2025, f: "專輯裡浪漫的合成器流行歌。", e: "💨🫂", deep: 1 },
+  { t: "Killah", a: "Mayhem", y: 2025, f: "和法國電子製作人 Gesaffelstein 合作的放克舞曲。", e: "🔪🕺", deep: 1 },
+  { t: "Zombieboy", a: "Mayhem", y: 2025, f: "致敬曾在〈Born This Way〉MV 登場、全身骷髏刺青的模特兒 Rick Genest。", e: "🧟‍♂️💀", deep: 1 },
+  { t: "LoveDrug", a: "Mayhem", y: 2025, f: "把愛比喻成會讓人上癮的藥。", e: "💊❤️", deep: 1 },
+  { t: "How Bad Do U Want Me", a: "Mayhem", y: 2025, f: "帶有 80 年代合成器流行感的歌。", e: "😏❓", deep: 1 },
+  { t: "Blade of Grass", a: "Mayhem", y: 2025, f: "寫她和未婚夫 Michael Polansky 的愛情。", e: "🌱💍", deep: 1 },
+]);

@@ -3,6 +3,9 @@
   const CLIP_POINTS = [100, 70, 40, 20];
   const CLUE_POINTS = [100, 60, 30];
   const RING_LENGTH = 2 * Math.PI * 54;
+  // iTunes 搜尋結果前幾名視為熱門歌
+  const HIT_RANK = 30;
+  const LEVEL_NAMES = { hits: "經典", all: "混合", deep: "冷門" };
 
   const $ = (id) => document.getElementById(id);
   const screens = ["home", "loading", "play", "result"];
@@ -67,11 +70,25 @@
     }
   }
 
-  const bestKey = (mode, rounds) => `guess-best-${state.artist.id}-${mode}-${rounds}`;
+  const bestKey = (mode, rounds) => `guess-best-${state.artist.id}-${mode}-${selectedLevel()}-${rounds}`;
   const readBest = (mode, rounds) => Number(storageGet(bestKey(mode, rounds))) || 0;
   const writeBest = (mode, rounds, score) => storageSet(bestKey(mode, rounds), String(score));
 
   const hasCuratedClues = (artist) => Boolean(window.CLUES && window.CLUES[artist.id]);
+
+  function selectedLevel() {
+    return document.querySelector('input[name="level"]:checked').value;
+  }
+
+  const isDeep = (song) => ("deep" in song ? song.deep : song.rank >= HIT_RANK);
+
+  function filterByLevel(songs, level) {
+    if (level === "all") return songs;
+    const picked = songs.filter((s) => (level === "deep" ? isDeep(s) : !isDeep(s)));
+    if (picked.length >= 4) return picked;
+    toast(`${LEVEL_NAMES[level]}歌不夠多，改用全部歌曲`);
+    return songs;
+  }
 
   function selectedRounds() {
     return Number(document.querySelector('input[name="rounds"]:checked').value);
@@ -81,7 +98,7 @@
     const rounds = selectedRounds();
     for (const el of document.querySelectorAll("[data-best]")) {
       const best = readBest(el.dataset.best, rounds);
-      el.textContent = best ? `${rounds} 題最佳：${best} 分` : "";
+      el.textContent = best ? `${LEVEL_NAMES[selectedLevel()]}・${rounds} 題最佳：${best} 分` : "";
     }
   }
 
@@ -152,7 +169,8 @@
   }
 
   async function loadItunes(artist) {
-    if (!itunesCache.has(artist.id)) itunesCache.set(artist.id, await window.ITunes.fetchSongs(artist));
+    const onProgress = (msg) => ($("loading-text").textContent = msg);
+    if (!itunesCache.has(artist.id)) itunesCache.set(artist.id, await window.ITunes.fetchSongs(artist, onProgress));
     return itunesCache.get(artist.id);
   }
 
@@ -183,6 +201,7 @@
       }
     }
 
+    state.pool = filterByLevel(state.pool, selectedLevel());
     state.queue = shuffle(state.pool).slice(0, Math.min(state.totalRounds, state.pool.length));
     state.totalRounds = state.queue.length;
     state.round = 0;
@@ -465,7 +484,7 @@
   for (const card of document.querySelectorAll(".mode-card")) {
     card.addEventListener("click", () => startGame(card.dataset.mode));
   }
-  for (const r of document.querySelectorAll('input[name="rounds"]')) {
+  for (const r of document.querySelectorAll('input[name="rounds"], input[name="level"]')) {
     r.addEventListener("change", renderBest);
   }
   $("btn-play").addEventListener("click", () => playClip(!state.answered));

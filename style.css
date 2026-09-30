@@ -263,6 +263,13 @@ h1 {
   outline-offset: 3px;
 }
 
+.level-hint {
+  margin: 8px 0 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .fineprint {
   text-align: center;
   color: var(--muted);

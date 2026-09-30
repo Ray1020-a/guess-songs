@@ -16,6 +16,9 @@ Lady Gaga、Michael Jackson、Bruno Mars、蕭煌奇、Ariana Grande、YOASOBI
 線索模式的題庫是手寫的（`js/clues/`）。沒有手寫題庫的歌手（目前是蕭煌奇）會改用 iTunes 資料自動出題：發行年份與曲長 → 專輯名稱（遮住歌名）→ 專輯封面。
 
 - 每題四選一，可選 5／10／20 題。
+- 難度：**經典**只考熱門歌、**混合**全部都考、**冷門**只考專輯歌與合作曲這些非主打。
+- 聽歌模式會抓歌手所有專輯的完整曲目（最多 80 張），不只是 iTunes 搜尋前幾名的熱門歌。
+- 手寫題庫：Lady Gaga 87 首、Ariana Grande 72 首、Michael Jackson 59 首、Bruno Mars 46 首、YOASOBI 22 首。
 - 鍵盤快捷鍵：`1`～`4` 選答案、空白鍵播放片段。
 - 各模式、各題數的最佳紀錄存在瀏覽器的 localStorage。
 
@@ -43,6 +46,8 @@ js/game.js      遊戲流程與計分
 ## 新增歌手
 
 在 `js/artists.js` 加一筆資料即可，聽歌模式馬上能玩；想要手寫線索的話，再照 `js/clues/gaga.js` 的格式新增檔案，並在 `index.html` 引入。
+
+題庫格式（`defineClues`）：`t` 歌名、`a` 專輯、`y` 年份、`f` 冷知識、`e` emoji、`w` 自訂第二條線索、`deep: 1` 標記為冷門歌。
 
 ## 版權
 

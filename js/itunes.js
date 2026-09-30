@@ -2,6 +2,10 @@
 // 不需要 API key；優先用 fetch，被 CORS 擋掉時改用 JSONP。
 (function () {
   const ENDPOINT = "https://itunes.apple.com/search";
+  const LOOKUP = "https://itunes.apple.com/lookup";
+  const SKIP_ALBUM = /karaoke|tribute|live|remix|instrumental|commentary|interview|greatest|essential|best of|number ones|hits|collection|anthology|playlist|伴奏|精選|演唱會/i;
+  const ALBUMS_PER_REQUEST = 5;
+  const MAX_ALBUMS = 80;
   const EXCLUDE = /remix|live|karaoke|instrumental|acoustic|demo|a cappella|acapella|version|edit\)|mix\)|commentary|interview|伴奏|純音樂|現場/i;
 
   function buildUrl(term, country) {
@@ -73,8 +77,10 @@
     return (a.date || Infinity) <= (b.date || Infinity) ? a : b;
   }
 
+  // rank：在 iTunes 搜尋結果中的名次，越小越熱門；只在專輯曲目裡找到的歌是 Infinity
   function toSongs(results, artist) {
     const seen = new Map();
+    let rank = 0;
     for (const r of results || []) {
       if (r.kind !== "song" || !r.previewUrl || !r.trackName) continue;
       if (!artist.match.test(r.artistName || "")) continue;
@@ -82,6 +88,7 @@
       if (artist.excludeCollection && artist.excludeCollection.test(r.collectionName || "")) continue;
       const key = normalizeTitle(r.trackName);
       if (!key) continue;
+      const songRank = r.__fromSearch ? (seen.has(key) ? seen.get(key).rank : rank++) : Infinity;
       const date = r.releaseDate ? Date.parse(r.releaseDate) : 0;
       const song = {
         id: r.trackId,
@@ -97,18 +104,86 @@
         previewUrl: r.previewUrl,
         link: r.trackViewUrl,
         key,
+        rank: songRank,
       };
-      seen.set(key, seen.has(key) ? better(seen.get(key), song) : song);
+      if (seen.has(key)) {
+        const prev = seen.get(key);
+        seen.set(key, { ...better(prev, song), rank: Math.min(prev.rank, songRank) });
+      } else {
+        seen.set(key, song);
+      }
     }
     return [...seen.values()];
   }
 
-  async function fetchSongs(artist) {
+  function lookupUrl(ids, entity, country) {
+    const params = new URLSearchParams({ id: ids.join(","), entity, limit: "200", country });
+    return `${LOOKUP}?${params}`;
+  }
+
+  // 搜尋結果裡出現最多次、且名字符合的 artistId 就是歌手本人
+  function findArtistId(results, artist) {
+    const counts = new Map();
+    for (const r of results) {
+      if (r.artistId && artist.match.test(r.artistName || "")) counts.set(r.artistId, (counts.get(r.artistId) || 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  }
+
+  // 同時最多跑 limit 個請求，失敗的批次直接略過
+  async function mapLimited(items, limit, fn) {
+    const out = [];
+    let i = 0;
+    const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (i < items.length) {
+        const item = items[i++];
+        try {
+          out.push(await fn(item));
+        } catch (err) {
+          console.warn(err);
+        }
+      }
+    });
+    await Promise.all(workers);
+    return out;
+  }
+
+  // 把歌手所有專輯的完整曲目抓回來，題庫才不會只有熱門歌
+  async function fetchAlbumTracks(artistId, artist, country, onProgress) {
+    const data = await request(lookupUrl([artistId], "album", country));
+    const albums = (data.results || [])
+      .filter((r) => r.wrapperType === "collection" && r.collectionId)
+      .filter((r) => !SKIP_ALBUM.test(r.collectionName || ""))
+      .filter((r) => !artist.excludeCollection || !artist.excludeCollection.test(r.collectionName || ""))
+      // 正規專輯優先，再來是單曲與 EP
+      .sort((a, b) => (b.trackCount || 0) - (a.trackCount || 0))
+      .slice(0, MAX_ALBUMS);
+    onProgress?.(`正在翻 ${albums.length} 張專輯的曲目……`);
+
+    const batches = [];
+    for (let i = 0; i < albums.length; i += ALBUMS_PER_REQUEST) {
+      batches.push(albums.slice(i, i + ALBUMS_PER_REQUEST).map((a) => a.collectionId));
+    }
+    const pages = await mapLimited(batches, 4, (ids) => request(lookupUrl(ids, "song", country)));
+    return pages.flatMap((p) => (p.results || []).filter((r) => r.wrapperType === "track"));
+  }
+
+  async function fetchSongs(artist, onProgress) {
     let lastError;
     for (const country of artist.countries) {
       try {
         const data = await request(buildUrl(artist.term, country));
-        const songs = toSongs(data.results, artist);
+        const searchResults = (data.results || []).map((r) => ({ ...r, __fromSearch: true }));
+        let albumTracks = [];
+        const artistId = findArtistId(searchResults, artist);
+        if (artistId) {
+          try {
+            albumTracks = await fetchAlbumTracks(artistId, artist, country, onProgress);
+          } catch (err) {
+            console.warn("抓不到完整曲目，只用搜尋結果", err);
+          }
+        }
+        const songs = toSongs([...searchResults, ...albumTracks], artist);
         if (songs.length >= 4) return songs;
       } catch (err) {
         lastError = err;

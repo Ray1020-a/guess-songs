@@ -40,6 +40,14 @@
         </div>
 
         <fieldset class="rounds">
+          <legend>難度</legend>
+          <label><input type="radio" name="level" value="hits" /> 經典</label>
+          <label><input type="radio" name="level" value="all" checked /> 混合</label>
+          <label><input type="radio" name="level" value="deep" /> 冷門</label>
+        </fieldset>
+        <p class="level-hint">經典只考熱門單曲；冷門只考專輯歌、合作曲這些非主打。</p>
+
+        <fieldset class="rounds">
           <legend>題數</legend>
           <label><input type="radio" name="rounds" value="5" /> 5 題</label>
           <label><input type="radio" name="rounds" value="10" checked /> 10 題</label>
