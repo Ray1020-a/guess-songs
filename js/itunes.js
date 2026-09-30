@@ -90,7 +90,8 @@
       if (EXCLUDE.test(r.trackName) || /karaoke|tribute/i.test(r.collectionName || "")) continue;
       if (artist.excludeCollection && artist.excludeCollection.test(r.collectionName || "")) continue;
       if (artist.excludeTrack && artist.excludeTrack.test(r.trackName)) continue;
-      if (r.trackTimeMillis && r.trackTimeMillis < MIN_DURATION_MS) continue;
+      const allowShort = artist.allowShort && artist.allowShort.test(r.trackName);
+      if (r.trackTimeMillis && r.trackTimeMillis < MIN_DURATION_MS && !allowShort) continue;
       const key = normalizeTitle(r.trackName);
       if (!key) continue;
       const songRank = r.__fromSearch ? (seen.has(key) ? seen.get(key).rank : rank++) : Infinity;

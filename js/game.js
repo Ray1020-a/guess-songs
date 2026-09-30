@@ -173,7 +173,7 @@
 
   function readSongCache(artist) {
     try {
-      const cached = JSON.parse(storageGet(`guess-songs-v2-${artist.id}`) || "null");
+      const cached = JSON.parse(storageGet(`guess-songs-v3-${artist.id}`) || "null");
       if (!cached || Date.now() - cached.savedAt > CACHE_TTL) return null;
       // JSON 存不了 Infinity，存成 null
       return cached.songs.map((s) => ({ ...s, rank: s.rank ?? Infinity }));
@@ -188,7 +188,7 @@
     if (!songs) {
       const onProgress = (msg) => ($("loading-text").textContent = msg);
       songs = await window.ITunes.fetchSongs(artist, onProgress);
-      storageSet(`guess-songs-v2-${artist.id}`, JSON.stringify({ savedAt: Date.now(), songs }));
+      storageSet(`guess-songs-v3-${artist.id}`, JSON.stringify({ savedAt: Date.now(), songs }));
     }
     itunesCache.set(artist.id, songs);
     return songs;

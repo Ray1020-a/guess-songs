@@ -10,8 +10,8 @@ window.ARTISTS = [
     match: /lady gaga/i,
     // 《捍衛戰士：獨行俠》原聲帶大多是她和 Hans Zimmer 等人掛名的配樂，太難猜
     excludeCollection: /top gun/i,
-    // 《Chromatica》裡的三段管弦樂間奏
-    excludeTrack: /^chromatica i+$/i,
+    // 《Chromatica》的三段管弦樂間奏很好玩，雖然很短也保留
+    allowShort: /^chromatica i+$/i,
     countries: ["tw", "us"],
     colors: { accent: "#ff2d95", accent2: "#b46bff", onAccent: "#ffffff" },
     ranks: ["Mother Monster 本人？👑", "資深 Little Monster 🐾", "還在練舞的 Monster 💃", "先去把《The Fame》聽完再來 📀"],
