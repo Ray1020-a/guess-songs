@@ -1239,8 +1239,8 @@
       $("btn-share-image").classList.toggle("hidden", !canShareFile);
       $("btn-share-image").disabled = !canShareFile;
       $("share-hint").textContent = canShareFile
-        ? "手機也可以長按圖片儲存。"
-        : "下載後就能上傳到 IG 限時動態。";
+        ? "分享時會自動複製網址，在限動加「連結」貼圖貼上，蓋在虛線框上。"
+        : "下載時會自動複製網址，上傳限動後加「連結」貼圖貼上，蓋在虛線框上。";
     } catch (err) {
       console.error(err);
       if (token !== shareToken) return;
@@ -1251,13 +1251,31 @@
     }
   }
 
+  // 分享或下載時順便把網址複製起來，到 IG 加「連結」貼圖直接貼上，蓋在成績圖的虛線框
+  function copyShareUrl() {
+    if (!navigator.clipboard) return Promise.resolve(false);
+    return navigator.clipboard.writeText(shareUrl()).then(
+      () => true,
+      () => false,
+    );
+  }
+
+  const LINK_TIP = "網址已複製，在限動加「連結」貼圖貼上，蓋在虛線框上";
+
   async function shareImage() {
     if (!shareFile) return;
+    // 複製和分享都要在點擊當下開始，不能等複製完才叫出分享選單，Safari 會擋
+    const copied = copyShareUrl();
     try {
       await navigator.share({ files: [shareFile], text: `${shareText()}\n${shareUrl()}` });
     } catch (err) {
-      if (err && err.name !== "AbortError") toast("分享失敗，改用下載圖片試試");
+      if (err && err.name !== "AbortError") return toast("分享失敗，改用下載圖片試試");
     }
+    if (await copied) toast(LINK_TIP);
+  }
+
+  async function downloadImage() {
+    if (await copyShareUrl()) toast(LINK_TIP);
   }
 
   async function copyShareText() {
@@ -1397,6 +1415,7 @@
   $("btn-home").addEventListener("click", quit);
   $("btn-share").addEventListener("click", share);
   $("btn-share-image").addEventListener("click", shareImage);
+  $("btn-download").addEventListener("click", downloadImage);
   $("btn-copy").addEventListener("click", copyShareText);
   $("share-close").addEventListener("click", () => $("share-dialog").close());
   $("share-dialog").addEventListener("click", (e) => {

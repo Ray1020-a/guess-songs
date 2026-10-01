@@ -272,7 +272,7 @@
     const n = history.length;
     const perRow = n <= 10 ? Math.min(n, 5) : 10;
     const gap = 14;
-    const size = Math.min(100, Math.floor((900 - gap * (perRow - 1)) / perRow));
+    const size = Math.min(92, Math.floor((900 - gap * (perRow - 1)) / perRow));
     const rows = Math.ceil(n / perRow);
     history.forEach((h, i) => {
       const row = Math.floor(i / perRow);
@@ -403,21 +403,37 @@
     }
     stats.forEach(([label, value], i) => drawStat(ctx, left + cellW * i, statTop, cellW, label, value));
 
-    const gridBottom = drawGrid(ctx, history, mode, 1390, accent, onAccent);
+    const gridBottom = drawGrid(ctx, history, mode, 1380, accent, onAccent);
 
     ctx.fillStyle = C.faint;
     ctx.font = font(500, 26, BODY);
     ctx.textAlign = "center";
     ctx.fillText(unit.legend, W / 2, gridBottom + 52);
 
-    ctx.fillStyle = C.text;
-    ctx.font = font(900, 44, BODY);
-    ctx.fillText("你能贏我嗎？", W / 2, Math.max(gridBottom + 140, 1620));
-    ctx.fillStyle = C.faint;
-    ctx.font = font(600, 28, MONO);
-    ctx.fillText(url, W / 2, Math.max(gridBottom + 190, 1670));
+    drawLinkSlot(ctx, Math.max(gridBottom + 84, 1600), url);
 
     return canvas;
+  }
+
+  // 底部的虛線框：留給 IG 的「連結」貼圖蓋上去。
+  // 框裡照樣寫挑戰句和網址，沒貼貼圖的人也看得到要去哪裡玩。
+  function drawLinkSlot(ctx, top, url) {
+    const w = 640;
+    const h = 124;
+    const x = (W - w) / 2;
+    ctx.save();
+    ctx.shadowColor = "transparent";
+    roundRect(ctx, x, top, w, h, h / 2);
+    ctx.fillStyle = "rgba(255, 244, 228, 0.06)";
+    ctx.fill();
+    ctx.setLineDash([16, 12]);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = hexA(C.text, 0.5);
+    ctx.stroke();
+    ctx.restore();
+
+    fitText(ctx, "你能贏我嗎？", W / 2, top + 56, { weight: 900, size: 38, family: BODY, maxWidth: w - 80, color: C.text });
+    fitText(ctx, url, W / 2, top + 96, { weight: 600, size: 24, family: MONO, maxWidth: w - 80, color: C.muted, minSize: 16 });
   }
 
   function trim(n) {
