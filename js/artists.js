@@ -269,6 +269,7 @@ window.ARTISTS.push(
   more("tw", "831", "八三夭", ["八三夭", "831"], /八三夭|^831$/i),
   more("tw", "caodong", "草東沒有派對", ["草東沒有派對", "No Party For Cao Dong"], /草東沒有派對|草东没有派对|no party for cao dong/i, { short: "草東" }),
   more("tw", "sunsetrollercoaster", "落日飛車", ["落日飛車", "Sunset Rollercoaster"], /落日飛車|落日飞车|sunset rollercoaster/i),
+  more("tw", "mangojump", "芒果醬", ["芒果醬", "Mango Jump"], /芒果醬|芒果酱|mango jump/i),
   more("tw", "waawei", "魏如萱", ["魏如萱", "Waa Wei"], /魏如萱|waa wei/i),
   more("tw", "9m88", "9m88", ["9m88"], /^9m88(\s*[,&]|$)/i),
   more("tw", "deserts", "張懸／安溥", ["張懸", "安溥", "Deserts Chang"], /張懸|张悬|安溥|deserts chang/i, { short: "張懸" }),
@@ -353,6 +354,7 @@ const ALIASES = {
   cyndi: "甜心教主 心凌", sodagreen: "魚丁糸 青峰", teresateng: "小鄧", feiyuching: "小哥", jonathanlee: "老李",
   wakin: "華健", richiejen: "小齊", ayue: "阿嶽", harlemyu: "哈林", she: "Selina Hebe Ella", jody: "二姊",
   wubai: "伍佰老師 China Blue", jeannie: "姊姊", caodong: "草東", amazingshow: "美秀", deserts: "安溥",
+  mangojump: "芒果醬 芒果 Mango Jump",
 };
 
 // 名字結尾是英文或數字才補空格：「Gaga 猜歌王」、「周杰倫猜歌王」
