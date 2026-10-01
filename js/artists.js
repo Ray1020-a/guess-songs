@@ -152,6 +152,9 @@ window.ARTISTS = [
   { region: "th", id: "phum", name: "Phum Viphurit", short: "Phum", terms: ["Phum Viphurit"], match: /phum viphurit/i },
 ];
 
+// 名字結尾是英文或數字才補空格：「Gaga 猜歌王」、「周杰倫猜歌王」
+window.withName = (name, rest) => (/[A-Za-z0-9.]$/.test(name) ? `${name} ${rest}` : `${name}${rest}`);
+
 // 用地區預設值補齊每位歌手沒寫到的欄位
 for (const artist of window.ARTISTS) {
   const region = window.REGIONS.find((r) => r.id === artist.region);
@@ -161,8 +164,8 @@ for (const artist of window.ARTISTS) {
     icon: artist.icon || region.icon,
     countries: artist.countries || region.countries,
     colors: artist.colors || region.colors,
-    tagline: artist.tagline || `${artist.name} 的歌，你認得幾首？`,
-    ranks: artist.ranks || [`${short} 本人？👑`, "資深歌迷 🎧", "有在認真聽的路人 🙂", "先去多聽幾首再來 📀"],
+    tagline: artist.tagline || window.withName(artist.name, "的歌，你認得幾首？"),
+    ranks: artist.ranks || [window.withName(short, "本人？👑"), "資深歌迷 🎧", "有在認真聽的路人 🙂", "先去多聽幾首再來 📀"],
   });
 }
 

@@ -4,9 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>猜歌王</title>
-    <meta name="description" content="猜歌遊戲：Lady Gaga、Michael Jackson、Bruno Mars、蕭煌奇、Ariana Grande、YOASOBI，聽片段或看線索猜歌名。" />
-    <meta name="theme-color" content="#0d0714" />
+    <meta name="description" content="猜歌遊戲：57 位台灣、日本、歐美、中國、印度、泰國歌手，聽片段或看線索猜歌名。" />
+    <meta name="theme-color" content="#0e0c10" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎤</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+TC:wght@400;500;700;900&family=Unbounded:wght@600;800&display=swap"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -14,56 +20,77 @@
       <!-- 首頁 -->
       <section id="screen-home" class="screen active">
         <header class="hero">
-          <div id="hero-icon" class="bolt" aria-hidden="true">⚡</div>
+          <p class="eyebrow">GUESS THE SONG</p>
+          <div class="vinyl vinyl-hero" aria-hidden="true">
+            <div class="vinyl-disc spin">
+              <span class="vinyl-label"><span id="hero-icon">⚡</span></span>
+            </div>
+          </div>
           <h1 id="hero-title">Gaga 猜歌王</h1>
           <p id="hero-tagline" class="tagline">你是真正的 Little Monster 嗎？</p>
         </header>
 
-        <section class="artists">
-          <label for="artist-select" class="section-label">選歌手</label>
+        <section class="picker">
+          <div class="picker-head">
+            <label for="artist-select" class="label">選歌手</label>
+            <span id="artist-meta" class="artist-meta"></span>
+          </div>
           <div class="select-wrap">
             <select id="artist-select"></select>
           </div>
-          <p id="artist-meta" class="artist-meta"></p>
         </section>
 
         <div class="modes">
           <button class="mode-card" data-mode="audio">
-            <span class="mode-icon" aria-hidden="true">🎧</span>
+            <svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
+              <rect x="3" y="14" width="4" height="6" rx="1.5" />
+              <rect x="17" y="14" width="4" height="6" rx="1.5" />
+            </svg>
             <span class="mode-name">聽歌猜歌</span>
-            <span class="mode-desc">從 1 秒開始聽，聽得越少分數越高。需要連網。</span>
+            <span class="mode-desc">從 1 秒開始聽，聽得越少分數越高。</span>
             <span class="mode-best" data-best="audio"></span>
           </button>
           <button class="mode-card" data-mode="clue">
-            <span class="mode-icon" aria-hidden="true">🔎</span>
+            <svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.5" cy="10.5" r="6" />
+              <path d="M15 15l5 5" />
+            </svg>
             <span class="mode-name">線索猜歌</span>
-            <span id="clue-desc" class="mode-desc">看冷知識、專輯與 emoji 猜歌名。離線也能玩。</span>
+            <span id="clue-desc" class="mode-desc">看冷知識、專輯與 emoji 猜歌名。</span>
             <span class="mode-best" data-best="clue"></span>
           </button>
         </div>
 
-        <fieldset class="rounds">
-          <legend>難度</legend>
-          <label><input type="radio" name="level" value="hits" /> 經典</label>
-          <label><input type="radio" name="level" value="all" checked /> 混合</label>
-          <label><input type="radio" name="level" value="deep" /> 冷門</label>
-        </fieldset>
-        <p class="level-hint">經典只考熱門單曲；冷門只考專輯歌、合作曲這些非主打。</p>
-
-        <fieldset class="rounds">
-          <legend>題數</legend>
-          <label><input type="radio" name="rounds" value="5" /> 5 題</label>
-          <label><input type="radio" name="rounds" value="10" checked /> 10 題</label>
-          <label><input type="radio" name="rounds" value="20" /> 20 題</label>
-        </fieldset>
+        <div class="settings">
+          <fieldset class="segmented">
+            <legend class="label">難度</legend>
+            <div class="segments">
+              <label><input type="radio" name="level" value="hits" /><span>經典</span></label>
+              <label><input type="radio" name="level" value="all" checked /><span>混合</span></label>
+              <label><input type="radio" name="level" value="deep" /><span>冷門</span></label>
+            </div>
+          </fieldset>
+          <fieldset class="segmented">
+            <legend class="label">題數</legend>
+            <div class="segments">
+              <label><input type="radio" name="rounds" value="5" /><span>5</span></label>
+              <label><input type="radio" name="rounds" value="10" checked /><span>10</span></label>
+              <label><input type="radio" name="rounds" value="20" /><span>20</span></label>
+            </div>
+          </fieldset>
+        </div>
+        <p class="hint">經典只考熱門單曲，冷門只考專輯歌與合作曲這些非主打。</p>
 
         <p class="fineprint">試聽片段由 Apple iTunes 提供，版權屬原權利人所有。</p>
       </section>
 
       <!-- 載入中 -->
       <section id="screen-loading" class="screen">
-        <div class="disco" aria-hidden="true"></div>
-        <p id="loading-text">正在召喚 Mother Monster……</p>
+        <div class="vinyl vinyl-loading" aria-hidden="true">
+          <div class="vinyl-disc spin fast"><span class="vinyl-label"></span></div>
+        </div>
+        <p id="loading-text" class="loading-text">正在召喚 Mother Monster……</p>
         <div id="loading-actions" class="loading-actions hidden">
           <button id="btn-loading-clue" class="primary">改玩線索模式</button>
           <button id="btn-loading-back" class="ghost">回首頁</button>
@@ -73,20 +100,22 @@
       <!-- 遊戲中 -->
       <section id="screen-play" class="screen">
         <div class="hud">
-          <button id="btn-quit" class="ghost small" aria-label="離開遊戲">✕</button>
-          <span id="hud-round">第 1 / 10 題</span>
-          <span id="hud-score">0 分</span>
+          <button id="btn-quit" class="icon-btn" aria-label="離開遊戲">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+          <span class="hud-round"><span class="label">題目</span><span id="hud-round">01 / 10</span></span>
+          <span class="hud-score"><span id="hud-score">0</span><span class="label">分</span></span>
         </div>
         <div class="progress"><div id="progress-bar"></div></div>
 
         <!-- 聽歌模式 -->
         <div id="audio-panel" class="panel">
-          <button id="btn-play" class="play-btn" aria-label="播放片段">
+          <button id="btn-play" class="vinyl vinyl-play" aria-label="播放片段">
             <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
-              <circle cx="60" cy="60" r="54" class="ring-bg" />
-              <circle cx="60" cy="60" r="54" class="ring-fg" id="ring-fg" />
+              <circle cx="60" cy="60" r="56" class="ring-bg" />
+              <circle cx="60" cy="60" r="56" class="ring-fg" id="ring-fg" />
             </svg>
-            <span id="play-icon">▶</span>
+            <span class="vinyl-disc"><span class="vinyl-label"><span id="play-icon">▶</span></span></span>
           </button>
           <p id="clip-label" class="clip-label">播放 1 秒</p>
           <div class="steps" id="clip-steps"></div>
@@ -116,11 +145,11 @@
 
       <!-- 結算 -->
       <section id="screen-result" class="screen">
-        <p class="result-kicker">最終得分</p>
-        <p id="result-score" class="result-score">0</p>
+        <p class="eyebrow">FINAL SCORE</p>
+        <p class="result-score"><span id="result-score">0</span><span id="result-max" class="result-max"></span></p>
         <p id="result-title" class="result-title"></p>
         <p id="result-sub" class="result-sub"></p>
-        <ul id="result-list" class="result-list"></ul>
+        <ol id="result-list" class="result-list"></ol>
         <div class="result-actions">
           <button id="btn-again" class="primary">再玩一次</button>
           <button id="btn-share" class="secondary">分享成績</button>

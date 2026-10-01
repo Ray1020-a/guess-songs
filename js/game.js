@@ -32,6 +32,8 @@
   const itunesCache = new Map();
 
   // ---------- 工具 ----------
+  const pad = (n) => String(n).padStart(2, "0");
+
   function shuffle(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -116,12 +118,12 @@
     root.setProperty("--on-accent", artist.colors.onAccent);
 
     $("hero-icon").textContent = artist.icon;
-    $("hero-title").textContent = `${artist.short} 猜歌王`;
+    $("hero-title").textContent = window.withName(artist.short, "猜歌王");
     $("hero-tagline").textContent = artist.tagline;
-    document.title = `${artist.short} 猜歌王`;
+    document.title = window.withName(artist.short, "猜歌王");
     $("clue-desc").textContent = hasCuratedClues(artist)
-      ? "看冷知識、專輯與 emoji 猜歌名。離線也能玩。"
-      : "看發行年份、專輯與封面猜歌名。需要連網。";
+      ? "看冷知識、專輯與 emoji 猜歌名。"
+      : "看發行年份、專輯與封面猜歌名。";
 
     $("artist-select").value = artist.id;
     const region = window.REGIONS.find((r) => r.id === artist.region);
@@ -258,8 +260,8 @@
     state.stage = 0;
     state.answered = false;
 
-    $("hud-round").textContent = `第 ${state.round + 1} / ${state.totalRounds} 題`;
-    $("hud-score").textContent = `${state.score} 分`;
+    $("hud-round").textContent = `${pad(state.round + 1)} / ${pad(state.totalRounds)}`;
+    $("hud-score").textContent = state.score;
     $("progress-bar").style.width = `${(state.round / state.totalRounds) * 100}%`;
     $("reveal").classList.add("hidden");
 
@@ -269,6 +271,11 @@
       state.audio = new Audio(song.previewUrl);
       state.audio.preload = "auto";
       state.audio.addEventListener("ended", () => ($("play-icon").textContent = "▶"));
+      // 有聲音時唱片才轉
+      state.audio.addEventListener("playing", () => $("btn-play").classList.add("is-playing"));
+      for (const evt of ["pause", "ended", "emptied"]) {
+        state.audio.addEventListener(evt, () => $("btn-play").classList.remove("is-playing"));
+      }
       setRing(0);
       $("play-icon").textContent = "▶";
       $("btn-more").disabled = false;
@@ -290,7 +297,7 @@
       const btn = document.createElement("button");
       btn.className = "option";
       btn.dataset.key = opt.key;
-      btn.innerHTML = `<span class="option-num">${i + 1}</span><span class="option-text"></span>`;
+      btn.innerHTML = `<span class="option-num">${pad(i + 1)}</span><span class="option-text"></span>`;
       btn.querySelector(".option-text").textContent = opt.title;
       btn.addEventListener("click", () => answer(opt, btn));
       box.appendChild(btn);
@@ -425,7 +432,7 @@
     }
     if (!correct) btn.classList.add("wrong");
 
-    $("hud-score").textContent = `${state.score} 分`;
+    $("hud-score").textContent = state.score;
     $("btn-more").disabled = true;
     $("btn-clue").disabled = true;
 
@@ -474,6 +481,7 @@
 
     $("progress-bar").style.width = "100%";
     $("result-score").textContent = state.score;
+    $("result-max").textContent = `/ ${max}`;
     $("result-title").textContent = rankTitle(state.score / max);
     $("result-sub").textContent =
       `答對 ${correctCount} / ${state.totalRounds} 題` +
@@ -495,7 +503,7 @@
   async function share() {
     const modeName = state.mode === "audio" ? "聽歌猜歌" : "線索猜歌";
     const correctCount = state.history.filter((h) => h.correct).length;
-    const text = `我在 ${state.artist.short} 猜歌王（${modeName}）拿到 ${state.score} 分，答對 ${correctCount} / ${state.totalRounds} 題！⚡ 你能贏我嗎？`;
+    const text = `我在 ${window.withName(state.artist.short, "猜歌王")}（${modeName}）拿到 ${state.score} 分，答對 ${correctCount} / ${state.totalRounds} 題！⚡ 你能贏我嗎？`;
     const url = `${location.href.split("#")[0]}#${state.artist.id}`;
     try {
       if (navigator.share) {
