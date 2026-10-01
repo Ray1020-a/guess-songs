@@ -13,7 +13,7 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+TC:wght@400;500;700;900&family=Unbounded:wght@600;800&display=swap"
     />
-    <link rel="stylesheet" href="style.css?v=202610011300" />
+    <link rel="stylesheet" href="style.css?v=202610011430" />
   </head>
   <body>
     <main class="app">
@@ -58,9 +58,8 @@
         </section>
 
         <div class="modes">
-          <p class="side-label">A 面・猜歌名</p>
+          <span class="label">選玩法</span>
           <button class="mode-card" data-mode="audio">
-            <span class="mode-num">A1</span>
             <svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" /><rect x="3" y="14" width="4" height="6" rx="1.5" /><rect x="17" y="14" width="4" height="6" rx="1.5" /></svg>
             <span class="mode-text">
               <span class="mode-name">聽歌猜歌</span>
@@ -69,7 +68,6 @@
             <span class="mode-best" data-best="audio"></span>
           </button>
           <button class="mode-card" data-mode="clue">
-            <span class="mode-num">A2</span>
             <svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l5 5" /></svg>
             <span class="mode-text">
               <span class="mode-name">線索猜歌</span>
@@ -78,7 +76,6 @@
             <span class="mode-best" data-best="clue"></span>
           </button>
           <button class="mode-card" data-mode="lyric">
-            <span class="mode-num">A3</span>
             <svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h6v6H7a2 2 0 0 1-2-2zM5 13c0 2 1 4 3 4M13 7h6v6h-4a2 2 0 0 1-2-2zM13 13c0 2 1 4 3 4" /></svg>
             <span class="mode-text">
               <span class="mode-name">歌詞猜歌</span>
@@ -86,15 +83,20 @@
             </span>
             <span class="mode-best" data-best="lyric"></span>
           </button>
-          <p class="side-label">B 面・考歌詞</p>
           <button class="mode-card" data-mode="fill">
-            <span class="mode-num">B1</span>
             <svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h5M15 12h5M4 17h10" /><path d="M10 12h4" stroke-dasharray="1.5 2" /></svg>
             <span class="mode-text">
               <span class="mode-name">歌詞填空</span>
               <span class="mode-desc">給歌名和半句歌詞，選出被挖掉的字。</span>
             </span>
             <span class="mode-best" data-best="fill"></span>
+          </button>
+          <button id="btn-guess-artist" class="mode-card" aria-haspopup="dialog" aria-controls="group-dialog">
+            <svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+            <span class="mode-text">
+              <span class="mode-name">猜歌手</span>
+              <span class="mode-desc">選一個歌單，聽一段猜是誰唱的，不用先選歌手。</span>
+            </span>
           </button>
         </div>
 
@@ -117,19 +119,6 @@
           </fieldset>
         </div>
         <p class="hint">經典只考熱門單曲，冷門只考專輯歌與合作曲這些非主打。</p>
-
-        <!-- 猜歌手跟上面選的歌手無關，放在分隔線下面當隱藏曲 -->
-        <div class="modes bonus">
-          <p class="side-label">隱藏曲・猜歌手</p>
-          <button id="btn-guess-artist" class="mode-card" aria-haspopup="dialog" aria-controls="group-dialog">
-            <span class="mode-num">✦</span>
-            <svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
-            <span class="mode-text">
-              <span class="mode-name">猜歌手</span>
-              <span class="mode-desc">選一個歌單，聽一段猜是誰唱的。順便找找下一位想玩的歌手。</span>
-            </span>
-          </button>
-        </div>
 
         <p class="fineprint">試聽片段由 Apple iTunes 提供，版權屬原權利人所有。</p>
       </section>
@@ -295,16 +284,16 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script src="js/artists.js?v=202610011300"></script>
-    <script src="js/groups.js?v=202610011300"></script>
-    <script src="js/clues/gaga.js?v=202610011300"></script>
-    <script src="js/clues/mj.js?v=202610011300"></script>
-    <script src="js/clues/bruno.js?v=202610011300"></script>
-    <script src="js/clues/ariana.js?v=202610011300"></script>
-    <script src="js/clues/yoasobi.js?v=202610011300"></script>
-    <script src="js/itunes.js?v=202610011300"></script>
-    <script src="js/lyrics.js?v=202610011300"></script>
-    <script src="js/share-card.js?v=202610011300"></script>
-    <script src="js/game.js?v=202610011300"></script>
+    <script src="js/artists.js?v=202610011430"></script>
+    <script src="js/groups.js?v=202610011430"></script>
+    <script src="js/clues/gaga.js?v=202610011430"></script>
+    <script src="js/clues/mj.js?v=202610011430"></script>
+    <script src="js/clues/bruno.js?v=202610011430"></script>
+    <script src="js/clues/ariana.js?v=202610011430"></script>
+    <script src="js/clues/yoasobi.js?v=202610011430"></script>
+    <script src="js/itunes.js?v=202610011430"></script>
+    <script src="js/lyrics.js?v=202610011430"></script>
+    <script src="js/share-card.js?v=202610011430"></script>
+    <script src="js/game.js?v=202610011430"></script>
   </body>
 </html>

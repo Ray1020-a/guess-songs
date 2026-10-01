@@ -829,24 +829,11 @@ kbd {
   color: var(--accent);
 }
 
-/* 模式清單做成唱片的 A 面、B 面曲目 */
+/* 模式清單：五種玩法同一層，排成一列按鈕 */
 .modes {
   display: grid;
   gap: 8px;
   margin-top: 20px;
-}
-
-.side-label {
-  margin: 14px 0 2px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-}
-
-.side-label:first-child {
-  margin-top: 0;
 }
 
 .mode-card {
@@ -866,19 +853,6 @@ kbd {
   transform: translateX(3px);
   border-color: var(--accent);
   background: var(--surface-2);
-}
-
-.mode-num {
-  flex: none;
-  width: 22px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--faint);
-}
-
-.mode-card:hover .mode-num {
-  color: var(--accent);
 }
 
 .mode-icon {
@@ -914,17 +888,6 @@ kbd {
   font-size: 11px;
   font-weight: 600;
   line-height: 1.4;
-  color: var(--accent);
-}
-
-/* 猜歌手放在分隔線下面，跟上面選的歌手、難度無關 */
-.modes.bonus {
-  margin-top: 28px;
-  padding-top: 22px;
-  border-top: 1px dashed var(--line);
-}
-
-.bonus .mode-num {
   color: var(--accent);
 }
 
