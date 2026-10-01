@@ -956,10 +956,26 @@
     $("btn-next").textContent = state.round + 1 >= state.totalRounds ? "看結果" : "下一題";
     $("reveal").classList.remove("hidden");
     $("btn-next").focus({ preventScroll: true });
-    $("reveal").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    scrollRevealIntoView();
 
     // 揭曉後把剩下的試聽播完
     if (usesAudio(state.mode)) playClip(false);
+  }
+
+  // 揭曉後把「下一題」捲到看得見的地方。
+  // scrollIntoView 只看版面高度，手機 Safari 的網址列、工具列會蓋在上面，
+  // 所以改用實際可見的高度（visualViewport）來算，並在按鈕下方多留一段給工具列；
+  // 但不會捲過頭，讓揭曉卡片的上緣跑出畫面。
+  function scrollRevealIntoView() {
+    const reveal = $("reveal");
+    const viewHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const rect = reveal.getBoundingClientRect();
+    const toolbarRoom = 88;
+    const wanted = rect.bottom - (viewHeight - toolbarRoom);
+    const delta = Math.min(wanted, rect.top - 12);
+    if (delta <= 0) return;
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollBy({ top: delta, behavior: smooth ? "smooth" : "auto" });
   }
 
   // ---------- 結算 ----------
