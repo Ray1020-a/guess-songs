@@ -139,9 +139,6 @@
     $("hero-title").textContent = window.withName(artist.short, "猜歌王");
     $("hero-tagline").textContent = artist.tagline;
     document.title = window.withName(artist.short, "猜歌王");
-    $("clue-desc").textContent = hasCuratedClues(artist)
-      ? "看冷知識、專輯與 emoji 猜歌名。"
-      : "看發行年份、專輯與封面猜歌名。";
 
     paintAvatar($("trigger-avatar"), artist);
     $("trigger-name").textContent = artist.name;

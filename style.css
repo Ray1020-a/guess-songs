@@ -874,12 +874,6 @@ kbd {
   font-weight: 900;
 }
 
-.mode-desc {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
 .mode-best {
   flex: none;
   max-width: 34%;
