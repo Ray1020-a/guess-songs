@@ -433,7 +433,23 @@
     ctx.restore();
 
     fitText(ctx, "你能贏我嗎？", W / 2, top + 56, { weight: 900, size: 38, family: BODY, maxWidth: w - 80, color: C.text });
-    fitText(ctx, url, W / 2, top + 96, { weight: 600, size: 24, family: MONO, maxWidth: w - 80, color: C.muted, minSize: 16 });
+    fitText(ctx, ellipsize(ctx, url, font(600, 20, MONO), w - 80), W / 2, top + 96, {
+      weight: 600,
+      size: 24,
+      family: MONO,
+      maxWidth: w - 80,
+      color: C.muted,
+      minSize: 20,
+    });
+  }
+
+  // 縮到最小字還放不下，就從尾巴截掉補「…」，不要整串畫出框外
+  function ellipsize(ctx, text, f, maxWidth) {
+    ctx.font = f;
+    if (ctx.measureText(text).width <= maxWidth) return text;
+    let s = text;
+    while (s && ctx.measureText(`${s}…`).width > maxWidth) s = s.slice(0, -1);
+    return `${s}…`;
   }
 
   function trim(n) {

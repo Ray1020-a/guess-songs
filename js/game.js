@@ -1039,7 +1039,8 @@
     return `我在 ${window.withName(subject().short, "猜歌王")}（${modeName}）拿到 ${state.score} 分，答對 ${correctCount} / ${state.totalRounds} 題！⚡ 你能贏我嗎？`;
   }
 
-  const shareUrl = () => `${location.href.split("#")[0]}#${state.artist.id}`;
+  // 只留網域和路徑：從 IG／FB 點進來會帶 ?fbclid=… 這種追蹤參數，不能跟著分享出去
+  const shareUrl = () => `${location.origin}${location.pathname}#${state.artist.id}`;
   let shareFile = null;
   let shareObjectUrl = null;
   // 每次重畫都換一個號碼，舊的、比較慢畫完的那張就不會蓋掉新的
