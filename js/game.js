@@ -1252,10 +1252,33 @@
     }
   }
 
-  // 分享或下載時順便把網址複製起來，到 IG 加「連結」貼圖直接貼上，蓋在成績圖的虛線框
+  // 分享或下載時順便把網址複製起來，到 IG 加「連結」貼圖直接貼上，蓋在成績圖的虛線框。
+  // 先用同步的 execCommand 當場寫進剪貼簿：分享選單一跳出來網頁就失去焦點，
+  // 非同步的 clipboard API 常常還沒寫完就被擋掉。不行再退回 clipboard API。
   function copyShareUrl() {
+    const url = shareUrl();
+    // 分享視窗是 modal，外面的元素選不到，暫存的輸入框要放在視窗裡
+    const host = $("share-dialog").open ? $("share-dialog") : document.body;
+    const ta = document.createElement("textarea");
+    ta.value = url;
+    ta.readOnly = true; // 不跳鍵盤
+    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;font-size:16px;pointer-events:none";
+    const prev = document.activeElement;
+    host.appendChild(ta);
+    ta.focus({ preventScroll: true });
+    ta.select();
+    ta.setSelectionRange(0, url.length); // iOS 只認這個
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch {
+      /* 不支援就交給 clipboard API */
+    }
+    ta.remove();
+    prev?.focus?.({ preventScroll: true });
+    if (ok) return Promise.resolve(true);
     if (!navigator.clipboard) return Promise.resolve(false);
-    return navigator.clipboard.writeText(shareUrl()).then(
+    return navigator.clipboard.writeText(url).then(
       () => true,
       () => false,
     );
@@ -1265,7 +1288,7 @@
 
   async function shareImage() {
     if (!shareFile) return;
-    // 複製和分享都要在點擊當下開始，不能等複製完才叫出分享選單，Safari 會擋
+    // 一定要先複製再叫出分享選單，兩件事都得在點擊當下做
     const copied = copyShareUrl();
     try {
       await navigator.share({ files: [shareFile], text: `${shareText()}\n${shareUrl()}` });
