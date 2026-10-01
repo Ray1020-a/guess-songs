@@ -962,12 +962,6 @@ kbd {
   outline-offset: 2px;
 }
 
-.hint {
-  margin: 10px 0 0;
-  color: var(--faint);
-  font-size: 12px;
-}
-
 .fineprint {
   margin-top: 36px;
   text-align: center;
