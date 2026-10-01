@@ -1,16 +1,13 @@
 # 🎤 猜歌王
 
-猜歌小遊戲，純前端、不需要安裝任何東西。首頁用下拉選單選歌手，共 57 位，依地區分組：
+猜歌小遊戲，純前端、不需要安裝任何東西。共 143 位歌手，包含一份「全球百大」與台灣、台語、中國、日本、韓國、歐美、拉丁、印度、泰國九個地區，完整名單見 `js/artists.js`。
 
-| 地區 | 歌手 |
-| --- | --- |
-| 台灣 | 周杰倫、五月天、蔡依林、張惠妹、田馥甄、林宥嘉、告五人、盧廣仲、徐佳瑩、楊丞琳、蕭煌奇 |
-| 台語 | 江蕙、伍佰、茄子蛋、謝金燕、陳雷 |
-| 日本 | YOASOBI、米津玄師、Mrs. GREEN APPLE、Official髭男dism、King Gnu、Ado、あいみょん、back number、宇多田ヒカル、Vaundy、LiSA |
-| 歐美 | Lady Gaga、Michael Jackson、Bruno Mars、Ariana Grande、Taylor Swift、Ed Sheeran、Billie Eilish、The Weeknd、Adele、Dua Lipa、Coldplay、Beyoncé、Justin Bieber、Olivia Rodrigo |
-| 中國 | 王菲、那英、周深、毛不易、李榮浩、華晨宇、張靚穎、薛之謙、李健、朴樹 |
-| 印度 | Arijit Singh、A.R. Rahman、Shreya Ghoshal |
-| 泰國 | Bodyslam、Palmy、Phum Viphurit |
+**選歌手**：點首頁的「目前歌手」卡片打開選歌面板。
+
+- 搜尋：中文、英文、暱稱都可以（例如「女神卡卡」「霉霉」「防彈」「jay z」）
+- 分類：最近、全球百大（顯示名次）、各地區、全部
+- 骰子按鈕：隨機抽一位
+- 鍵盤：首頁按 `/` 打開，`↑` `↓` 選擇，`Enter` 確定，`Esc` 關閉；在搜尋框按 `Enter` 直接選第一筆
 
 網址後面加 `#歌手代號` 可以直接指定歌手，例如 `#yoasobi`、`#mj`、`#jay`（代號見 `js/artists.js` 的 `id`）。
 

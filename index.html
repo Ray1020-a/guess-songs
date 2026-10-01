@@ -31,12 +31,26 @@
         </header>
 
         <section class="picker">
-          <div class="picker-head">
-            <label for="artist-select" class="label">選歌手</label>
-            <span id="artist-meta" class="artist-meta"></span>
-          </div>
-          <div class="select-wrap">
-            <select id="artist-select"></select>
+          <span class="label">選歌手</span>
+          <div class="picker-row">
+            <button id="artist-trigger" class="artist-trigger" aria-haspopup="dialog" aria-controls="artist-dialog">
+              <span id="trigger-avatar" class="avatar" aria-hidden="true"></span>
+              <span class="trigger-text">
+                <span id="trigger-name" class="trigger-name"></span>
+                <span id="artist-meta" class="artist-meta"></span>
+              </span>
+              <span class="trigger-action">換歌手<kbd>/</kbd></span>
+            </button>
+            <button id="btn-random" class="dice-btn" aria-label="隨機抽一位歌手" title="隨機抽一位歌手">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
+                <circle cx="8.5" cy="8.5" r="1.2" />
+                <circle cx="15.5" cy="15.5" r="1.2" />
+                <circle cx="12" cy="12" r="1.2" />
+                <circle cx="15.5" cy="8.5" r="1.2" />
+                <circle cx="8.5" cy="15.5" r="1.2" />
+              </svg>
+            </button>
           </div>
         </section>
 
@@ -157,6 +171,25 @@
         </div>
       </section>
     </main>
+
+    <!-- 選歌手面板 -->
+    <dialog id="artist-dialog" class="sheet" aria-labelledby="sheet-title">
+      <div class="sheet-body">
+        <div class="sheet-head">
+          <h2 id="sheet-title">選歌手</h2>
+          <span id="sheet-count" class="sheet-count"></span>
+          <button id="sheet-close" class="icon-btn" aria-label="關閉">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+        <div class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l5 5" /></svg>
+          <input id="artist-search" type="search" placeholder="搜尋歌手：中文、英文、暱稱都可以" autocomplete="off" spellcheck="false" aria-controls="artist-results" />
+        </div>
+        <div id="artist-tabs" class="tabs" role="tablist" aria-label="分類"></div>
+        <div id="artist-results" class="results" role="listbox" aria-label="歌手清單"></div>
+      </div>
+    </dialog>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 

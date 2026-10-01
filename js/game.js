@@ -125,31 +125,259 @@
       ? "看冷知識、專輯與 emoji 猜歌名。"
       : "看發行年份、專輯與封面猜歌名。";
 
-    $("artist-select").value = artist.id;
-    const region = window.REGIONS.find((r) => r.id === artist.region);
-    $("artist-meta").textContent = hasCuratedClues(artist)
-      ? `${region.name}・線索模式有 ${window.CLUES[artist.id].length} 首手寫題目`
-      : `${region.name}・線索模式由 iTunes 資料自動出題`;
+    paintAvatar($("trigger-avatar"), artist);
+    $("trigger-name").textContent = artist.name;
+    $("artist-meta").textContent = artistSubline(artist);
     if (location.hash.slice(1) !== artist.id) history.replaceState(null, "", `#${artist.id}`);
     renderBest();
   }
 
-  // 依地區分組的下拉選單
-  function renderArtists() {
-    const select = $("artist-select");
-    for (const region of window.REGIONS) {
-      const artists = window.ARTISTS.filter((a) => a.region === region.id);
-      const group = document.createElement("optgroup");
-      group.label = `${region.icon} ${region.name}（${artists.length}）`;
-      for (const artist of artists) {
-        const option = document.createElement("option");
-        option.value = artist.id;
-        option.textContent = artist.name;
-        group.appendChild(option);
-      }
-      select.appendChild(group);
+  // ---------- 選歌手面板 ----------
+  const RECENT_KEY = "guess-recent";
+  const RECENT_MAX = 8;
+  const picker = { tab: null };
+  const byId = (id) => window.ARTISTS.find((a) => a.id === id);
+  const regionOf = (artist) => window.REGIONS.find((r) => r.id === artist.region);
+
+  function readRecent() {
+    try {
+      return JSON.parse(storageGet(RECENT_KEY) || "[]").filter(byId);
+    } catch {
+      return [];
     }
-    select.addEventListener("change", () => selectArtist(select.value));
+  }
+
+  function pushRecent(id) {
+    storageSet(RECENT_KEY, JSON.stringify([id, ...readRecent().filter((x) => x !== id)].slice(0, RECENT_MAX)));
+  }
+
+  // 頭像：中日泰文取第一個字，英文取兩個字的字首；BTS、U2 這類縮寫取前兩個字母
+  function initials(name) {
+    if (/^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u.test(name)) return [...name][0];
+    const words = name.replace(/[^\p{L}\p{N}\s]/gu, "").split(/\s+/).filter((w) => w && !/^the$/i.test(w));
+    if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase();
+    const word = words[0] || name;
+    return word === word.toUpperCase() ? word.slice(0, 2) : word[0].toUpperCase();
+  }
+
+  function paintAvatar(el, artist) {
+    el.textContent = initials(artist.name);
+    el.style.background = `linear-gradient(135deg, ${artist.colors.accent}, ${artist.colors.accent2})`;
+    el.style.color = artist.colors.onAccent;
+  }
+
+  function artistSubline(artist) {
+    const parts = [regionOf(artist).name];
+    if (artist.top) parts.push(`百大 #${artist.top}`);
+    parts.push(hasCuratedClues(artist) ? `手寫題庫 ${window.CLUES[artist.id].length} 首` : "自動出題");
+    return parts.join("・");
+  }
+
+  function pickerTabs() {
+    const tabs = [];
+    const recent = readRecent();
+    if (recent.length) tabs.push({ id: "recent", name: "最近", count: recent.length });
+    tabs.push({ id: "top", name: "全球百大", count: window.TOP100.length });
+    for (const r of window.REGIONS) {
+      tabs.push({ id: r.id, name: r.name, count: window.ARTISTS.filter((a) => a.region === r.id).length });
+    }
+    tabs.push({ id: "all", name: "全部", count: window.ARTISTS.length });
+    return tabs;
+  }
+
+  function listForTab(tab) {
+    if (tab === "recent") return readRecent().map(byId);
+    if (tab === "top") return window.ARTISTS.filter((a) => a.top).sort((a, b) => a.top - b.top);
+    if (tab === "all") return window.ARTISTS;
+    return window.ARTISTS.filter((a) => a.region === tab);
+  }
+
+  // 比對時忽略空白和符號，「jay z」「JAY-Z」「ac dc」都找得到
+  const compact = (str) => str.toLowerCase().replace(/[\s.\-'’!/&]/g, "");
+
+  function searchArtists(query) {
+    const q = compact(query);
+    if (!q) return [];
+    return window.ARTISTS.map((a) => {
+      const name = compact(a.name);
+      const rank = name.startsWith(q) ? 0 : name.includes(q) ? 1 : compact(a.searchText).includes(q) ? 2 : -1;
+      return { a, rank };
+    })
+      .filter((x) => x.rank >= 0)
+      .sort((x, y) => x.rank - y.rank || (x.a.top || 999) - (y.a.top || 999))
+      .map((x) => x.a);
+  }
+
+  function artistRow(artist, { showRank }) {
+    const row = document.createElement("button");
+    row.className = "artist-row";
+    row.type = "button";
+    row.setAttribute("role", "option");
+    row.dataset.id = artist.id;
+    const current = artist.id === state.artist.id;
+    row.setAttribute("aria-selected", String(current));
+    row.innerHTML = `
+      <span class="row-rank"></span>
+      <span class="avatar" aria-hidden="true"></span>
+      <span class="row-text"><span class="row-name"></span><span class="row-sub"></span></span>
+      <span class="row-check" aria-hidden="true">${current ? "✓" : ""}</span>`;
+    row.querySelector(".row-rank").textContent = showRank ? String(artist.top).padStart(2, "0") : "";
+    row.classList.toggle("ranked", showRank);
+    paintAvatar(row.querySelector(".avatar"), artist);
+    row.querySelector(".row-name").textContent = artist.name;
+    row.querySelector(".row-sub").textContent = artistSubline(artist);
+    return row;
+  }
+
+  function renderPicker() {
+    const query = $("artist-search").value;
+    const box = $("artist-results");
+    box.innerHTML = "";
+
+    const tabsBox = $("artist-tabs");
+    tabsBox.classList.toggle("dimmed", Boolean(query.trim()));
+    for (const tab of tabsBox.children) {
+      tab.setAttribute("aria-selected", String(tab.dataset.tab === picker.tab));
+    }
+
+    if (query.trim()) {
+      const found = searchArtists(query);
+      $("sheet-count").textContent = `找到 ${found.length} 位`;
+      if (!found.length) {
+        const empty = document.createElement("p");
+        empty.className = "results-empty";
+        empty.textContent = `找不到「${query.trim()}」。試試英文名、中文俗稱，或換個寫法。`;
+        box.appendChild(empty);
+      }
+      for (const a of found) box.appendChild(artistRow(a, { showRank: false }));
+      return;
+    }
+
+    const list = listForTab(picker.tab);
+    $("sheet-count").textContent = `${list.length} 位`;
+    if (picker.tab === "all") {
+      // 「全部」依地區分段，段落標題會黏在上方
+      for (const r of window.REGIONS) {
+        const title = document.createElement("p");
+        title.className = "results-group";
+        title.textContent = `${r.icon} ${r.name}`;
+        box.appendChild(title);
+        for (const a of list.filter((x) => x.region === r.id)) box.appendChild(artistRow(a, { showRank: false }));
+      }
+      return;
+    }
+    for (const a of list) box.appendChild(artistRow(a, { showRank: picker.tab === "top" }));
+  }
+
+  function renderTabs() {
+    const box = $("artist-tabs");
+    box.innerHTML = "";
+    for (const tab of pickerTabs()) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tab";
+      btn.setAttribute("role", "tab");
+      btn.dataset.tab = tab.id;
+      btn.innerHTML = `<span></span><span class="tab-count">${tab.count}</span>`;
+      btn.firstChild.textContent = tab.name;
+      btn.addEventListener("click", () => {
+        picker.tab = tab.id;
+        $("artist-search").value = "";
+        renderPicker();
+        $("artist-results").scrollTop = 0;
+      });
+      box.appendChild(btn);
+    }
+  }
+
+  function openPicker() {
+    const dialog = $("artist-dialog");
+    if (dialog.open) return;
+    renderTabs();
+    const tabIds = pickerTabs().map((t) => t.id);
+    if (!tabIds.includes(picker.tab)) picker.tab = readRecent().length ? "recent" : "top";
+    $("artist-search").value = "";
+    renderPicker();
+    dialog.showModal();
+    $("artist-tabs").querySelector('[aria-selected="true"]')?.scrollIntoView({ inline: "center", block: "nearest" });
+    const current = $("artist-results").querySelector('[aria-selected="true"]');
+    if (current) current.scrollIntoView({ block: "center" });
+    // 手機上自動跳出鍵盤會擋住清單，只有桌機才自動聚焦搜尋框
+    if (window.matchMedia("(pointer: fine)").matches) $("artist-search").focus();
+    else $("sheet-close").focus();
+  }
+
+  function choose(id, { random = false } = {}) {
+    selectArtist(id);
+    pushRecent(id);
+    const dialog = $("artist-dialog");
+    if (dialog.open) dialog.close();
+    $("artist-trigger").focus({ preventScroll: true });
+    const vinyl = document.querySelector(".vinyl-hero");
+    vinyl.classList.remove("shuffle");
+    void vinyl.offsetWidth;
+    vinyl.classList.add("shuffle");
+    if (random) toast(`抽到了：${state.artist.name}`);
+  }
+
+  function chooseRandom() {
+    const pool = window.ARTISTS.filter((a) => a.id !== state.artist.id);
+    choose(pool[Math.floor(Math.random() * pool.length)].id, { random: true });
+  }
+
+  function setupPicker() {
+    const dialog = $("artist-dialog");
+    $("artist-trigger").addEventListener("click", openPicker);
+    $("btn-random").addEventListener("click", chooseRandom);
+    $("sheet-close").addEventListener("click", () => dialog.close());
+    // 關閉後把焦點還給「目前歌手」卡片，不然焦點會卡在隱藏的搜尋框裡
+    dialog.addEventListener("close", () => $("artist-trigger").focus({ preventScroll: true }));
+    // 點到面板外的背景就關閉
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+    $("artist-search").addEventListener("input", () => {
+      renderPicker();
+      $("artist-results").scrollTop = 0;
+    });
+    $("artist-results").addEventListener("click", (e) => {
+      const row = e.target.closest(".artist-row");
+      if (row) choose(row.dataset.id);
+    });
+
+    // 鍵盤：上下鍵在清單裡移動、左右鍵切分類、隨手打字就跳到搜尋框
+    dialog.addEventListener("keydown", (e) => {
+      const rows = [...$("artist-results").querySelectorAll(".artist-row")];
+      const active = document.activeElement;
+      const index = rows.indexOf(active);
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        if (!rows.length) return;
+        e.preventDefault();
+        const step = e.key === "ArrowDown" ? 1 : -1;
+        const next = index === -1 ? (step > 0 ? 0 : rows.length - 1) : index + step;
+        if (next < 0) $("artist-search").focus();
+        else rows[Math.min(next, rows.length - 1)].focus();
+      } else if (e.key === "Enter" && active === $("artist-search") && rows.length) {
+        e.preventDefault();
+        choose(rows[0].dataset.id);
+      } else if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && active?.classList.contains("tab")) {
+        e.preventDefault();
+        const tabs = [...$("artist-tabs").children];
+        const next = tabs[(tabs.indexOf(active) + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+        next.focus();
+        next.click();
+      } else if (e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey && active !== $("artist-search") && e.key !== " ") {
+        $("artist-search").focus();
+      }
+    });
+
+    // 首頁按 / 打開面板
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "/" || dialog.open || !$("screen-home").classList.contains("active")) return;
+      if (e.target.matches("input, textarea")) return;
+      e.preventDefault();
+      openPicker();
+    });
   }
 
   // ---------- 自動線索（沒有手寫題庫的歌手） ----------
@@ -564,7 +792,7 @@
     }
   });
 
-  renderArtists();
+  setupPicker();
   const initial = location.hash.slice(1) || storageGet("guess-artist");
   selectArtist(initial, { remember: false });
 })();
