@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>猜歌王</title>
     <meta name="description" content="猜歌遊戲：57 位台灣、日本、歐美、中國、印度、泰國歌手，聽片段或看線索猜歌名。" />
-    <meta name="theme-color" content="#0e0c10" />
+    <meta name="theme-color" content="#15130f" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎤</text></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,7 +13,7 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+TC:wght@400;500;700;900&family=Unbounded:wght@600;800&display=swap"
     />
-    <link rel="stylesheet" href="style.css?v=202610010621" />
+    <link rel="stylesheet" href="style.css?v=202610010651" />
   </head>
   <body>
     <main class="app">
@@ -57,6 +57,25 @@
           <div id="quick-artists" class="quick-artists" aria-label="快速換歌手"></div>
         </section>
 
+        <div class="settings">
+          <fieldset class="segmented">
+            <legend class="label">難度</legend>
+            <div class="segments">
+              <label><input type="radio" name="level" value="hits" /><span>經典</span></label>
+              <label><input type="radio" name="level" value="all" checked /><span>混合</span></label>
+              <label><input type="radio" name="level" value="deep" /><span>冷門</span></label>
+            </div>
+          </fieldset>
+          <fieldset class="segmented">
+            <legend class="label">題數</legend>
+            <div class="segments">
+              <label><input type="radio" name="rounds" value="5" /><span>5</span></label>
+              <label><input type="radio" name="rounds" value="10" checked /><span>10</span></label>
+              <label><input type="radio" name="rounds" value="20" /><span>20</span></label>
+            </div>
+          </fieldset>
+        </div>
+
         <div class="modes">
           <span class="label">選玩法</span>
           <button class="mode-card" data-mode="audio">
@@ -93,25 +112,6 @@
               <span class="mode-name">猜歌手</span>
             </span>
           </button>
-        </div>
-
-        <div class="settings">
-          <fieldset class="segmented">
-            <legend class="label">難度</legend>
-            <div class="segments">
-              <label><input type="radio" name="level" value="hits" /><span>經典</span></label>
-              <label><input type="radio" name="level" value="all" checked /><span>混合</span></label>
-              <label><input type="radio" name="level" value="deep" /><span>冷門</span></label>
-            </div>
-          </fieldset>
-          <fieldset class="segmented">
-            <legend class="label">題數</legend>
-            <div class="segments">
-              <label><input type="radio" name="rounds" value="5" /><span>5</span></label>
-              <label><input type="radio" name="rounds" value="10" checked /><span>10</span></label>
-              <label><input type="radio" name="rounds" value="20" /><span>20</span></label>
-            </div>
-          </fieldset>
         </div>
 
         <p class="fineprint">試聽片段由 Apple iTunes 提供，版權屬原權利人所有。</p>
@@ -263,9 +263,13 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
           </button>
         </div>
-        <div class="share-preview">
+        <div id="share-preview" class="share-preview">
           <p id="share-loading" class="share-loading">正在畫成績圖……</p>
           <img id="share-img" alt="成績圖" class="hidden" />
+        </div>
+        <div id="share-bg" class="share-bg hidden">
+          <span class="label">背景</span>
+          <div id="share-bgs" class="share-bgs" role="radiogroup" aria-label="成績圖背景"></div>
         </div>
         <div class="share-actions">
           <button id="btn-share-image" class="primary">分享到 IG 限動</button>
@@ -278,16 +282,16 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script src="js/artists.js?v=202610010621"></script>
-    <script src="js/groups.js?v=202610010621"></script>
-    <script src="js/clues/gaga.js?v=202610010621"></script>
-    <script src="js/clues/mj.js?v=202610010621"></script>
-    <script src="js/clues/bruno.js?v=202610010621"></script>
-    <script src="js/clues/ariana.js?v=202610010621"></script>
-    <script src="js/clues/yoasobi.js?v=202610010621"></script>
-    <script src="js/itunes.js?v=202610010621"></script>
-    <script src="js/lyrics.js?v=202610010621"></script>
-    <script src="js/share-card.js?v=202610010621"></script>
-    <script src="js/game.js?v=202610010621"></script>
+    <script src="js/artists.js?v=202610010651"></script>
+    <script src="js/groups.js?v=202610010651"></script>
+    <script src="js/clues/gaga.js?v=202610010651"></script>
+    <script src="js/clues/mj.js?v=202610010651"></script>
+    <script src="js/clues/bruno.js?v=202610010651"></script>
+    <script src="js/clues/ariana.js?v=202610010651"></script>
+    <script src="js/clues/yoasobi.js?v=202610010651"></script>
+    <script src="js/itunes.js?v=202610010651"></script>
+    <script src="js/lyrics.js?v=202610010651"></script>
+    <script src="js/share-card.js?v=202610010651"></script>
+    <script src="js/game.js?v=202610010651"></script>
   </body>
 </html>
