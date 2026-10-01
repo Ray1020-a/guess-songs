@@ -40,9 +40,7 @@
 
   function cleanLines(entry) {
     if (entry.syncedLyrics) {
-      const synced = parseSynced(entry.syncedLyrics);
-      // 先留下所有行的時間，接唱模式要用前一句到下一句的間隔
-      return synced.filter((l) => isLyricLine(l.text));
+      return parseSynced(entry.syncedLyrics).filter((l) => isLyricLine(l.text));
     }
     return (entry.plainLyrics || "")
       .split(/\r?\n/)
@@ -199,34 +197,5 @@
     return null;
   }
 
-  // 模式三：接唱。前三句照原曲時間一句句亮起，再選下一句
-  function nextLineQuestion(lines, synced) {
-    if (!synced) return null;
-    const candidates = middleIndexes(lines, 3).filter((i) => {
-      const next = lines[i + 1];
-      if (!next) return false;
-      // 下一句和眼前這幾句一模一樣（副歌重複）就沒得猜
-      return ![lines[i - 2], lines[i - 1], lines[i]].some((l) => compact(l.text) === compact(next.text));
-    });
-    if (!candidates.length) return null;
-    const i = pick(candidates);
-    const answer = lines[i + 1].text;
-    const distractors = [];
-    for (const other of shuffle(lines)) {
-      if (distractors.length >= 3) break;
-      const t = other.text;
-      if (compact(t) === compact(answer) || distractors.some((d) => compact(d) === compact(t))) continue;
-      if ([i - 2, i - 1, i].some((k) => compact(lines[k].text) === compact(t))) continue;
-      distractors.push(t);
-    }
-    if (distractors.length < 3) return null;
-    const shown = [lines[i - 2], lines[i - 1], lines[i]].map((l, k, arr) => ({
-      text: l.text,
-      // 每句停留的秒數 = 到下一句的間隔，太長太短都夾一下
-      hold: Math.min(6, Math.max(1.2, ((k < 2 ? arr[k + 1].time : lines[i + 1].time) - l.time) || 2.5)),
-    }));
-    return { shown, answer, distractors };
-  }
-
-  window.Lyrics = { fetchLyrics, guessTitleQuestion, fillQuestion, nextLineQuestion, isCJK };
+  window.Lyrics = { fetchLyrics, guessTitleQuestion, fillQuestion, isCJK };
 })();

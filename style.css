@@ -1076,38 +1076,9 @@ kbd {
   letter-spacing: 0.08em;
 }
 
-.blank.filled,
-.lyric-next.filled {
+.blank.filled {
   color: var(--good);
   border-color: var(--good);
-}
-
-/* 接唱：還沒唱到的句子是暗的，唱到的那句亮起來 */
-.karaoke {
-  color: var(--faint);
-  transition: color 0.25s ease, transform 0.25s ease;
-}
-
-.karaoke.singing {
-  color: var(--accent);
-  transform: translateX(4px);
-}
-
-.karaoke.sung {
-  color: var(--text);
-}
-
-.lyric-next {
-  color: var(--muted);
-  font-size: 17px;
-  border-top: 1px dashed var(--line);
-  padding-top: 12px;
-  visibility: hidden;
-}
-
-.lyric-card.waiting .lyric-next,
-.lyric-next.filled {
-  visibility: visible;
 }
 
 .lyric-tools {
