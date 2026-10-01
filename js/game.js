@@ -139,14 +139,12 @@
     $("hero-title").textContent = window.withName(artist.short, "猜歌王");
     $("hero-tagline").textContent = artist.tagline;
     document.title = window.withName(artist.short, "猜歌王");
-    $("clue-desc").textContent = hasCuratedClues(artist)
-      ? "看冷知識、專輯與 emoji 猜歌名。"
-      : "看發行年份、專輯與封面猜歌名。";
 
     paintAvatar($("trigger-avatar"), artist);
     $("trigger-name").textContent = artist.name;
     $("artist-meta").textContent = artistSubline(artist);
     if (location.hash.slice(1) !== artist.id) history.replaceState(null, "", `#${artist.id}`);
+    renderQuick();
     renderBest();
   }
 
@@ -196,6 +194,7 @@
     const recent = readRecent();
     if (recent.length) tabs.push({ id: "recent", name: "最近", count: recent.length });
     tabs.push({ id: "top", name: "全球百大", count: window.TOP100.length });
+    tabs.push({ id: "style", name: "依風格", count: styleGroups().length });
     for (const r of window.REGIONS) {
       tabs.push({ id: r.id, name: r.name, count: window.ARTISTS.filter((a) => a.region === r.id).length });
     }
@@ -203,10 +202,15 @@
     return tabs;
   }
 
+  // 猜歌手的歌單照聲線、曲風分好了，拿來挑歌手比照地區分更直覺；大亂鬥是全部歌手，不算
+  const styleGroups = () => window.GROUPS.filter((g) => g.id !== "mix");
+  const topArtists = () => window.ARTISTS.filter((a) => a.top).sort((a, b) => a.top - b.top);
+
   function listForTab(tab) {
     if (tab === "recent") return readRecent().map(byId);
-    if (tab === "top") return window.ARTISTS.filter((a) => a.top).sort((a, b) => a.top - b.top);
+    if (tab === "top") return topArtists();
     if (tab === "all") return window.ARTISTS;
+    if (tab === "style") return [...new Set(styleGroups().flatMap((g) => g.artists))].map(byId);
     return window.ARTISTS.filter((a) => a.region === tab);
   }
 
@@ -273,6 +277,17 @@
 
     const list = listForTab(picker.tab);
     $("sheet-count").textContent = `${list.length} 位`;
+    if (picker.tab === "style") {
+      // 同一位歌手可能在好幾個歌單裡，各段都列出來
+      for (const g of styleGroups()) {
+        const title = document.createElement("p");
+        title.className = "results-group";
+        title.textContent = `${g.icon} ${g.name}`;
+        box.appendChild(title);
+        for (const id of g.artists) box.appendChild(artistRow(byId(id), { showRank: false }));
+      }
+      return;
+    }
     if (picker.tab === "all") {
       // 「全部」依地區分段，段落標題會黏在上方
       for (const r of window.REGIONS) {
@@ -325,28 +340,123 @@
     else $("sheet-close").focus();
   }
 
-  function choose(id, { random = false } = {}) {
-    selectArtist(id);
+  function choose(id) {
     pushRecent(id);
-    const dialog = $("artist-dialog");
-    if (dialog.open) dialog.close();
+    selectArtist(id);
+    for (const dialog of [$("artist-dialog"), $("draw-dialog")]) if (dialog.open) dialog.close();
     $("artist-trigger").focus({ preventScroll: true });
     const vinyl = document.querySelector(".vinyl-hero");
     vinyl.classList.remove("shuffle");
     void vinyl.offsetWidth;
     vinyl.classList.add("shuffle");
-    if (random) toast(`抽到了：${state.artist.name}`);
   }
 
-  function chooseRandom() {
-    const pool = window.ARTISTS.filter((a) => a.id !== state.artist.id);
-    choose(pool[Math.floor(Math.random() * pool.length)].id, { random: true });
+  // ---------- 首頁的快速換歌手 ----------
+  // 玩過的話列最近的歌手；第一次來就列百大前幾名，不用打開面板也有得選
+  const QUICK_MAX = 4;
+
+  function renderQuick() {
+    const box = $("quick-artists");
+    box.innerHTML = "";
+    const recent = readRecent().map(byId).filter((a) => a.id !== state.artist.id);
+    const list = (recent.length ? recent : topArtists().filter((a) => a.id !== state.artist.id)).slice(0, QUICK_MAX);
+    const label = document.createElement("span");
+    label.className = "quick-label";
+    label.textContent = recent.length ? "最近" : "熱門";
+    box.appendChild(label);
+    for (const a of list) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "quick-chip";
+      chip.dataset.id = a.id;
+      chip.innerHTML = `<span class="avatar" aria-hidden="true"></span><span class="quick-name"></span>`;
+      paintAvatar(chip.querySelector(".avatar"), a);
+      chip.querySelector(".quick-name").textContent = a.name;
+      chip.title = `換成 ${a.name}`;
+      box.appendChild(chip);
+    }
+  }
+
+  // ---------- 抽歌手：一次抽三位，挑一位 ----------
+  const DRAW_KEY = "guess-draw-scope";
+  const DRAW_COUNT = 3;
+  const drawScopes = () => [
+    { id: "top", name: "全球百大", icon: "🏆", artists: () => topArtists() },
+    { id: "all", name: "全部", icon: "🎲", artists: () => window.ARTISTS },
+    ...styleGroups().map((g) => ({ id: g.id, name: g.name, icon: g.icon, artists: () => g.artists.map(byId) })),
+  ];
+  const draw = { scope: null, shown: [] };
+
+  function currentScope() {
+    const scopes = drawScopes();
+    return scopes.find((x) => x.id === draw.scope) || scopes[0];
+  }
+
+  function renderDrawScopes() {
+    const box = $("draw-scopes");
+    box.innerHTML = "";
+    for (const scope of drawScopes()) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tab";
+      btn.setAttribute("role", "tab");
+      btn.setAttribute("aria-selected", String(scope.id === currentScope().id));
+      btn.textContent = `${scope.icon} ${scope.name}`;
+      btn.addEventListener("click", () => {
+        draw.scope = scope.id;
+        storageSet(DRAW_KEY, scope.id);
+        for (const b of box.children) b.setAttribute("aria-selected", String(b === btn));
+        drawThree();
+      });
+      box.appendChild(btn);
+    }
+  }
+
+  // 不抽目前的歌手，也盡量不重複上一輪抽過的
+  function drawThree() {
+    const all = currentScope().artists().filter((a) => a.id !== state.artist.id);
+    const fresh = all.filter((a) => !draw.shown.includes(a.id));
+    const picked = shuffle(fresh.length >= DRAW_COUNT ? fresh : all).slice(0, DRAW_COUNT);
+    draw.shown = picked.map((a) => a.id);
+    const box = $("draw-cards");
+    box.innerHTML = "";
+    for (const a of picked) {
+      const row = artistRow(a, { showRank: false });
+      row.classList.add("draw-card");
+      row.querySelector(".row-check").textContent = "選這位";
+      box.appendChild(row);
+    }
+  }
+
+  function openDraw() {
+    draw.scope = draw.scope || storageGet(DRAW_KEY);
+    draw.shown = [];
+    renderDrawScopes();
+    drawThree();
+    $("draw-dialog").showModal();
+    $("draw-scopes").querySelector('[aria-selected="true"]')?.scrollIntoView({ inline: "center", block: "nearest" });
+    $("btn-redraw").focus();
   }
 
   function setupPicker() {
     const dialog = $("artist-dialog");
     $("artist-trigger").addEventListener("click", openPicker);
-    $("btn-random").addEventListener("click", chooseRandom);
+    $("btn-random").addEventListener("click", openDraw);
+    $("quick-artists").addEventListener("click", (e) => {
+      const chip = e.target.closest(".quick-chip");
+      if (chip) choose(chip.dataset.id);
+    });
+    const drawDialog = $("draw-dialog");
+    $("draw-close").addEventListener("click", () => drawDialog.close());
+    drawDialog.addEventListener("close", () => $("artist-trigger").focus({ preventScroll: true }));
+    drawDialog.addEventListener("click", (e) => {
+      if (e.target === drawDialog) drawDialog.close();
+    });
+    $("btn-redraw").addEventListener("click", drawThree);
+    $("draw-cards").addEventListener("click", (e) => {
+      const row = e.target.closest(".artist-row");
+      if (row) choose(row.dataset.id);
+    });
     $("sheet-close").addEventListener("click", () => dialog.close());
     // 關閉後把焦點還給「目前歌手」卡片，不然焦點會卡在隱藏的搜尋框裡
     dialog.addEventListener("close", () => $("artist-trigger").focus({ preventScroll: true }));
@@ -804,6 +914,7 @@
       correct,
       points,
       pick: opt.title,
+      artistId: state.mode === "artist" ? song.key : null,
       stage: state.stage,
       seconds: usesAudio(state.mode) ? clipSeconds()[state.stage] : null,
     });
@@ -887,8 +998,19 @@
       const mark = h.correct ? `+${h.points}` : "✕";
       li.innerHTML = `<span class="rl-title"></span><span class="rl-mark">${mark}</span>`;
       li.querySelector(".rl-title").textContent = h.correct ? h.title : `${h.title}（你選了 ${h.pick}）`;
+      if (h.artistId) {
+        const play = document.createElement("button");
+        play.type = "button";
+        play.className = "rl-play";
+        play.dataset.id = h.artistId;
+        play.textContent = "玩這位";
+        play.title = `換成 ${byId(h.artistId).name}，回首頁選模式`;
+        li.classList.add("has-play");
+        li.appendChild(play);
+      }
       list.appendChild(li);
     }
+    $("result-hint").classList.toggle("hidden", state.mode !== "artist");
     show("result");
   }
 
@@ -1070,8 +1192,8 @@
   }
 
   // ---------- 事件 ----------
-  for (const card of document.querySelectorAll(".mode-card")) {
-    card.addEventListener("click", () => (card.dataset.mode === "artist" ? openGroupPicker() : startGame(card.dataset.mode)));
+  for (const card of document.querySelectorAll(".mode-card[data-mode]")) {
+    card.addEventListener("click", () => startGame(card.dataset.mode));
   }
   $("btn-guess-artist").addEventListener("click", openGroupPicker);
   $("group-close").addEventListener("click", () => $("group-dialog").close());
@@ -1100,6 +1222,13 @@
     if (e.target === $("share-dialog")) $("share-dialog").close();
   });
   $("btn-loading-back").addEventListener("click", quit);
+  $("result-list").addEventListener("click", (e) => {
+    const btn = e.target.closest(".rl-play");
+    if (!btn) return;
+    quit();
+    choose(btn.dataset.id);
+    toast(`換成 ${state.artist.name} 了，選個模式開始吧`);
+  });
   $("btn-loading-clue").addEventListener("click", () => startGame("clue"));
   $("reveal-art").addEventListener("error", (e) => e.target.classList.add("hidden"));
 
