@@ -166,7 +166,7 @@
         <ol id="result-list" class="result-list"></ol>
         <div class="result-actions">
           <button id="btn-again" class="primary">再玩一次</button>
-          <button id="btn-share" class="secondary">分享成績</button>
+          <button id="btn-share" class="secondary">分享成績圖</button>
           <button id="btn-home" class="ghost">回首頁</button>
         </div>
       </section>
@@ -191,6 +191,29 @@
       </div>
     </dialog>
 
+    <!-- 分享成績圖 -->
+    <dialog id="share-dialog" class="sheet share-sheet" aria-labelledby="share-title">
+      <div class="sheet-body">
+        <div class="sheet-head">
+          <h2 id="share-title">分享成績</h2>
+          <span class="sheet-count">1080 × 1920・限動尺寸</span>
+          <button id="share-close" class="icon-btn" aria-label="關閉">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+        <div class="share-preview">
+          <p id="share-loading" class="share-loading">正在畫成績圖……</p>
+          <img id="share-img" alt="成績圖" class="hidden" />
+        </div>
+        <div class="share-actions">
+          <button id="btn-share-image" class="primary">分享到 IG 限動</button>
+          <a id="btn-download" class="secondary" download="guess-the-song.png">下載圖片</a>
+          <button id="btn-copy" class="ghost">複製文字</button>
+        </div>
+        <p id="share-hint" class="share-hint">手機也可以長按圖片儲存。</p>
+      </div>
+    </dialog>
+
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="js/artists.js"></script>
@@ -200,6 +223,7 @@
     <script src="js/clues/ariana.js"></script>
     <script src="js/clues/yoasobi.js"></script>
     <script src="js/itunes.js"></script>
+    <script src="js/share-card.js"></script>
     <script src="js/game.js"></script>
   </body>
 </html>

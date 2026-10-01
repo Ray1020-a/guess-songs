@@ -652,7 +652,14 @@
     const correct = opt.key === song.key;
     const points = correct ? currentPoints() : 0;
     state.score += points;
-    state.history.push({ title: song.title, correct, points, pick: opt.title });
+    state.history.push({
+      title: song.title,
+      correct,
+      points,
+      pick: opt.title,
+      stage: state.stage,
+      seconds: state.mode === "audio" ? CLIP_SECONDS[state.stage] : null,
+    });
 
     for (const b of $("options").querySelectorAll(".option")) {
       b.disabled = true;
@@ -706,6 +713,7 @@
     const prevBest = readBest(state.mode, state.totalRounds);
     const isRecord = state.score > prevBest;
     if (isRecord) writeBest(state.mode, state.totalRounds, state.score);
+    state.lastResult = { max, isRecord, rank: rankTitle(state.score / max), level: LEVEL_NAMES[selectedLevel()] };
 
     $("progress-bar").style.width = "100%";
     $("result-score").textContent = state.score;
@@ -728,20 +736,75 @@
     show("result");
   }
 
-  async function share() {
+  function shareText() {
     const modeName = state.mode === "audio" ? "聽歌猜歌" : "線索猜歌";
     const correctCount = state.history.filter((h) => h.correct).length;
-    const text = `我在 ${window.withName(state.artist.short, "猜歌王")}（${modeName}）拿到 ${state.score} 分，答對 ${correctCount} / ${state.totalRounds} 題！⚡ 你能贏我嗎？`;
-    const url = `${location.href.split("#")[0]}#${state.artist.id}`;
+    return `我在 ${window.withName(state.artist.short, "猜歌王")}（${modeName}）拿到 ${state.score} 分，答對 ${correctCount} / ${state.totalRounds} 題！⚡ 你能贏我嗎？`;
+  }
+
+  const shareUrl = () => `${location.href.split("#")[0]}#${state.artist.id}`;
+  let shareFile = null;
+
+  // 打開預覽視窗，當場把成績畫成限動尺寸的圖
+  async function share() {
+    const dialog = $("share-dialog");
+    const img = $("share-img");
+    shareFile = null;
+    img.classList.add("hidden");
+    $("share-loading").classList.remove("hidden");
+    $("btn-share-image").disabled = true;
+    dialog.showModal();
+
     try {
-      if (navigator.share) {
-        await navigator.share({ title: document.title, text, url });
-        return;
-      }
-      await navigator.clipboard.writeText(`${text}\n${url}`);
-      toast("已複製到剪貼簿");
+      const canvas = await window.ShareCard.render({
+        artist: state.artist,
+        mode: state.mode,
+        levelName: state.lastResult.level,
+        score: state.score,
+        max: state.lastResult.max,
+        rank: state.lastResult.rank,
+        isRecord: state.lastResult.isRecord,
+        history: state.history,
+        url: shareUrl().replace(/^https?:\/\//, ""),
+      });
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+      const name = `${state.artist.id}-${state.score}.png`;
+      shareFile = new File([blob], name, { type: "image/png" });
+      const objectUrl = URL.createObjectURL(blob);
+      img.src = objectUrl;
+      img.classList.remove("hidden");
+      $("share-loading").classList.add("hidden");
+      $("btn-download").href = objectUrl;
+      $("btn-download").download = name;
+
+      // 不支援分享檔案的瀏覽器（多半是電腦）就只留下載
+      const canShareFile = Boolean(navigator.canShare && navigator.canShare({ files: [shareFile] }));
+      $("btn-share-image").classList.toggle("hidden", !canShareFile);
+      $("btn-share-image").disabled = !canShareFile;
+      $("share-hint").textContent = canShareFile
+        ? "手機也可以長按圖片儲存。"
+        : "下載後就能上傳到 IG 限時動態。";
     } catch (err) {
-      if (err && err.name !== "AbortError") toast("分享失敗");
+      console.error(err);
+      $("share-loading").textContent = "成績圖畫不出來，先用「複製文字」分享吧。";
+    }
+  }
+
+  async function shareImage() {
+    if (!shareFile) return;
+    try {
+      await navigator.share({ files: [shareFile], text: `${shareText()}\n${shareUrl()}` });
+    } catch (err) {
+      if (err && err.name !== "AbortError") toast("分享失敗，改用下載圖片試試");
+    }
+  }
+
+  async function copyShareText() {
+    try {
+      await navigator.clipboard.writeText(`${shareText()}\n${shareUrl()}`);
+      toast("已複製到剪貼簿");
+    } catch {
+      toast("複製失敗");
     }
   }
 
@@ -769,6 +832,12 @@
   $("btn-again").addEventListener("click", () => startGame(state.mode));
   $("btn-home").addEventListener("click", quit);
   $("btn-share").addEventListener("click", share);
+  $("btn-share-image").addEventListener("click", shareImage);
+  $("btn-copy").addEventListener("click", copyShareText);
+  $("share-close").addEventListener("click", () => $("share-dialog").close());
+  $("share-dialog").addEventListener("click", (e) => {
+    if (e.target === $("share-dialog")) $("share-dialog").close();
+  });
   $("btn-loading-back").addEventListener("click", quit);
   $("btn-loading-clue").addEventListener("click", () => startGame("clue"));
   $("reveal-art").addEventListener("error", (e) => e.target.classList.add("hidden"));
