@@ -214,5 +214,23 @@
     throw lastError || new Error("連不上 iTunes");
   }
 
-  window.ITunes = { fetchSongs, normalizeTitle, isSingle };
+  // 「猜歌手」模式用的輕量版：只做一次搜尋、不翻專輯，一位歌手只花一個請求
+  async function fetchQuick(artist) {
+    let lastError;
+    for (const country of artist.countries.slice(0, 2)) {
+      for (const term of artist.terms.slice(0, 1)) {
+        try {
+          const data = await request(buildUrl(term, country));
+          const songs = toSongs((data.results || []).map((r) => ({ ...r, __fromSearch: true })), artist);
+          if (songs.length) return songs;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+    }
+    if (lastError) throw lastError;
+    return [];
+  }
+
+  window.ITunes = { fetchSongs, fetchQuick, normalizeTitle, isSingle };
 })();

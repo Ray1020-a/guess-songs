@@ -1,12 +1,18 @@
 (function () {
   const CLIP_SECONDS = [1, 3, 7, 15];
+  // 認聲音比認歌難，猜歌手模式給長一點
+  const ARTIST_CLIP_SECONDS = [2, 5, 10, 20];
   const CLIP_POINTS = [100, 70, 40, 20];
   const CLUE_POINTS = [100, 60, 30];
   const RING_LENGTH = 2 * Math.PI * 54;
   // iTunes 搜尋結果前幾名視為熱門歌
   const HIT_RANK = 30;
   const LEVEL_NAMES = { hits: "經典", all: "混合", deep: "冷門" };
-  const MODE_NAMES = { audio: "聽歌猜歌", clue: "線索猜歌", lyric: "歌詞猜歌", fill: "歌詞填空" };
+  const MODE_NAMES = { audio: "聽歌猜歌", clue: "線索猜歌", lyric: "歌詞猜歌", fill: "歌詞填空", artist: "猜歌手" };
+  const usesAudio = (mode) => mode === "audio" || mode === "artist";
+  const clipSeconds = () => (state.mode === "artist" ? ARTIST_CLIP_SECONDS : CLIP_SECONDS);
+  // 猜歌手模式的主角是歌單，其他模式是選好的歌手；計分、稱號、成績圖都用這個
+  const subject = () => (state.mode === "artist" && state.group ? state.group.subject : state.artist);
   const LYRIC_MODES = ["lyric", "fill"];
   // 填空的選項是歌詞片段，正確答案用這個 key
   const ANSWER_KEY = "__answer";
@@ -39,6 +45,7 @@
 
   // ---------- 工具 ----------
   const pad = (n) => String(n).padStart(2, "0");
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -80,7 +87,8 @@
     }
   }
 
-  const bestKey = (mode, rounds) => `guess-best-${state.artist.id}-${mode}-${selectedLevel()}-${rounds}`;
+  const bestKey = (mode, rounds, id = subject().id) =>
+    mode === "artist" ? `guess-best-${id}-artist-${rounds}` : `guess-best-${id}-${mode}-${selectedLevel()}-${rounds}`;
   const readBest = (mode, rounds) => Number(storageGet(bestKey(mode, rounds))) || 0;
   const writeBest = (mode, rounds, score) => storageSet(bestKey(mode, rounds), String(score));
 
@@ -112,16 +120,20 @@
     }
   }
 
+  function applyTheme(colors) {
+    const root = document.documentElement.style;
+    root.setProperty("--accent", colors.accent);
+    root.setProperty("--accent-2", colors.accent2);
+    root.setProperty("--on-accent", colors.onAccent);
+  }
+
   // ---------- 選歌手 ----------
   function selectArtist(id, { remember = true } = {}) {
     const artist = window.ARTISTS.find((a) => a.id === id) || DEFAULT_ARTIST;
     state.artist = artist;
     if (remember) storageSet("guess-artist", artist.id);
 
-    const root = document.documentElement.style;
-    root.setProperty("--accent", artist.colors.accent);
-    root.setProperty("--accent-2", artist.colors.accent2);
-    root.setProperty("--on-accent", artist.colors.onAccent);
+    applyTheme(artist.colors);
 
     $("hero-icon").textContent = artist.icon;
     $("hero-title").textContent = window.withName(artist.short, "猜歌王");
@@ -444,7 +456,11 @@
     state.mode = mode;
     state.totalRounds = selectedRounds();
 
-    if (mode === "clue" && hasCuratedClues(artist)) {
+    if (mode === "artist") {
+      applyTheme(state.group.colors);
+      const ok = await buildArtistQueue();
+      if (!ok) return;
+    } else if (mode === "clue" && hasCuratedClues(artist)) {
       state.pool = window.CLUES[artist.id].map((s) => ({ ...s, key: window.ITunes.normalizeTitle(s.title) }));
     } else {
       show("loading");
@@ -472,8 +488,10 @@
       }
     }
 
-    state.pool = filterByLevel(state.pool, selectedLevel());
-    if (isLyricMode(mode)) {
+    if (mode !== "artist") state.pool = filterByLevel(state.pool, selectedLevel());
+    if (mode === "artist") {
+      // 題目在 buildArtistQueue 已經排好了
+    } else if (isLyricMode(mode)) {
       const ok = await buildLyricQueue(mode);
       if (!ok) return;
     } else {
@@ -483,7 +501,7 @@
     state.round = 0;
     state.score = 0;
     state.history = [];
-    $("audio-panel").classList.toggle("hidden", mode !== "audio");
+    $("audio-panel").classList.toggle("hidden", !usesAudio(mode));
     $("clue-panel").classList.toggle("hidden", mode !== "clue");
     $("lyric-panel").classList.toggle("hidden", !isLyricMode(mode));
     show("play");
@@ -510,7 +528,7 @@
     if (isLyricMode(state.mode)) {
       $("btn-hint").disabled = false;
       renderLyric();
-    } else if (state.mode === "audio") {
+    } else if (usesAudio(state.mode)) {
       state.audio = new Audio(song.previewUrl);
       state.audio.preload = "auto";
       state.audio.addEventListener("ended", () => ($("play-icon").textContent = "▶"));
@@ -533,7 +551,10 @@
 
   function renderOptions(song) {
     let options;
-    if (isTextMode(state.mode)) {
+    if (state.mode === "artist") {
+      const others = shuffle(state.group.artists.filter((id) => id !== song.key)).slice(0, 3);
+      options = shuffle([song.key, ...others]).map((id) => ({ key: id, title: byId(id).name }));
+    } else if (isTextMode(state.mode)) {
       const q = song.lyricQ;
       options = shuffle([
         { key: ANSWER_KEY, title: q.answer },
@@ -557,7 +578,7 @@
   }
 
   function currentPoints() {
-    return state.mode === "audio" ? CLIP_POINTS[state.stage] : CLUE_POINTS[state.stage];
+    return usesAudio(state.mode) ? CLIP_POINTS[state.stage] : CLUE_POINTS[state.stage];
   }
 
   function updateWorth() {
@@ -566,21 +587,21 @@
 
   // ---------- 聽歌模式 ----------
   function renderClipStage() {
-    const sec = CLIP_SECONDS[state.stage];
+    const sec = clipSeconds()[state.stage];
     $("clip-label").textContent = `播放 ${sec} 秒`;
     const steps = $("clip-steps");
     steps.innerHTML = "";
-    CLIP_SECONDS.forEach((s, i) => {
+    clipSeconds().forEach((s, i) => {
       const dot = document.createElement("span");
       dot.className = "step" + (i <= state.stage ? " on" : "");
       dot.textContent = `${s}s`;
       steps.appendChild(dot);
     });
-    const last = state.stage >= CLIP_SECONDS.length - 1;
+    const last = state.stage >= clipSeconds().length - 1;
     $("btn-more").disabled = last;
     $("btn-more").textContent = last
       ? "已經是最長片段"
-      : `多聽一點（${CLIP_SECONDS[state.stage + 1]} 秒）`;
+      : `多聽一點（${clipSeconds()[state.stage + 1]} 秒）`;
   }
 
   function setRing(ratio) {
@@ -609,7 +630,7 @@
     cancelAnimationFrame(state.rafId);
     a.pause();
     if (fromStart) a.currentTime = 0;
-    state.clipLimit = state.answered ? Infinity : CLIP_SECONDS[state.stage];
+    state.clipLimit = state.answered ? Infinity : clipSeconds()[state.stage];
     $("play-icon").textContent = "…";
     try {
       await a.play();
@@ -633,7 +654,7 @@
   }
 
   function listenMore() {
-    if (state.answered || state.stage >= CLIP_SECONDS.length - 1) return;
+    if (state.answered || state.stage >= clipSeconds().length - 1) return;
     state.stage++;
     renderClipStage();
     updateWorth();
@@ -779,12 +800,12 @@
     const points = correct ? currentPoints() : 0;
     state.score += points;
     state.history.push({
-      title: song.title,
+      title: state.mode === "artist" ? `${byId(song.key).name}〈${song.title}〉` : song.title,
       correct,
       points,
       pick: opt.title,
       stage: state.stage,
-      seconds: state.mode === "audio" ? CLIP_SECONDS[state.stage] : null,
+      seconds: usesAudio(state.mode) ? clipSeconds()[state.stage] : null,
     });
 
     for (const b of $("options").querySelectorAll(".option")) {
@@ -801,8 +822,13 @@
 
     $("reveal-verdict").textContent = correct ? `答對了！+${points} 分` : "可惜，答錯了";
     $("reveal-verdict").className = "verdict " + (correct ? "good" : "bad");
-    $("reveal-title").textContent = song.title;
-    $("reveal-meta").textContent = [song.album, song.year].filter(Boolean).join(" · ");
+    if (state.mode === "artist") {
+      $("reveal-title").textContent = byId(song.key).name;
+      $("reveal-meta").textContent = [`〈${song.title}〉`, song.year].filter(Boolean).join(" · ");
+    } else {
+      $("reveal-title").textContent = song.title;
+      $("reveal-meta").textContent = [song.album, song.year].filter(Boolean).join(" · ");
+    }
 
     const art = $("reveal-art");
     if (song.artwork) {
@@ -822,12 +848,12 @@
     $("reveal").scrollIntoView({ behavior: "smooth", block: "nearest" });
 
     // 揭曉後把剩下的試聽播完
-    if (state.mode === "audio") playClip(false);
+    if (usesAudio(state.mode)) playClip(false);
   }
 
   // ---------- 結算 ----------
   function rankTitle(ratio) {
-    const ranks = state.artist.ranks;
+    const ranks = subject().ranks;
     if (ratio >= 0.9) return ranks[0];
     if (ratio >= 0.7) return ranks[1];
     if (ratio >= 0.4) return ranks[2];
@@ -841,7 +867,9 @@
     const prevBest = readBest(state.mode, state.totalRounds);
     const isRecord = state.score > prevBest;
     if (isRecord) writeBest(state.mode, state.totalRounds, state.score);
-    state.lastResult = { max, isRecord, rank: rankTitle(state.score / max), level: LEVEL_NAMES[selectedLevel()] };
+    // 猜歌手模式沒有難度，成績圖第三格改放歌單名稱
+    const levelInfo = state.mode === "artist" ? { level: state.group.name, levelLabel: "歌單" } : { level: LEVEL_NAMES[selectedLevel()], levelLabel: "難度" };
+    state.lastResult = { max, isRecord, rank: rankTitle(state.score / max), ...levelInfo };
 
     $("progress-bar").style.width = "100%";
     $("result-score").textContent = state.score;
@@ -867,7 +895,7 @@
   function shareText() {
     const modeName = MODE_NAMES[state.mode];
     const correctCount = state.history.filter((h) => h.correct).length;
-    return `我在 ${window.withName(state.artist.short, "猜歌王")}（${modeName}）拿到 ${state.score} 分，答對 ${correctCount} / ${state.totalRounds} 題！⚡ 你能贏我嗎？`;
+    return `我在 ${window.withName(subject().short, "猜歌王")}（${modeName}）拿到 ${state.score} 分，答對 ${correctCount} / ${state.totalRounds} 題！⚡ 你能贏我嗎？`;
   }
 
   const shareUrl = () => `${location.href.split("#")[0]}#${state.artist.id}`;
@@ -885,10 +913,11 @@
 
     try {
       const canvas = await window.ShareCard.render({
-        artist: state.artist,
+        artist: subject(),
         mode: state.mode,
         modeName: MODE_NAMES[state.mode],
         levelName: state.lastResult.level,
+        levelLabel: state.lastResult.levelLabel,
         score: state.score,
         max: state.lastResult.max,
         rank: state.lastResult.rank,
@@ -897,7 +926,7 @@
         url: shareUrl().replace(/^https?:\/\//, ""),
       });
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
-      const name = `${state.artist.id}-${state.score}.png`;
+      const name = `${subject().id}-${state.score}.png`;
       shareFile = new File([blob], name, { type: "image/png" });
       const objectUrl = URL.createObjectURL(blob);
       img.src = objectUrl;
@@ -939,14 +968,115 @@
 
   function quit() {
     stopAudio();
+    // 猜歌手模式用的是歌單的配色，回首頁換回目前歌手的
+    applyTheme(state.artist.colors);
     renderBest();
     show("home");
   }
 
+  // ---------- 猜歌手 ----------
+  const quickCache = new Map();
+
+  async function quickSongs(artist) {
+    if (quickCache.has(artist.id)) return quickCache.get(artist.id);
+    // 之前玩過這位歌手、已經有完整曲目的話直接用
+    const songs = itunesCache.get(artist.id) || readSongCache(artist) || (await window.ITunes.fetchQuick(artist));
+    quickCache.set(artist.id, songs);
+    return songs;
+  }
+
+  // 從歌單裡挑歌手，每位抓一首比較熱門的歌
+  async function buildArtistQueue() {
+    const group = state.group;
+    show("loading");
+    $("loading-actions").classList.add("hidden");
+    $("btn-loading-clue").classList.add("hidden");
+    const want = state.totalRounds;
+    // 歌單夠大就每題不同歌手；歌手比題數少時才會重複
+    let order = shuffle(group.artists);
+    while (order.length < want * 2) order = order.concat(shuffle(group.artists));
+    const queue = [];
+    const usedSongs = new Set();
+    let failures = 0;
+    let tried = 0;
+    let i = 0;
+    const worker = async () => {
+      while (queue.length < want && i < order.length && tried < want * 3) {
+        const artist = byId(order[i++]);
+        tried++;
+        try {
+          const songs = (await quickSongs(artist)).filter((x) => !usedSongs.has(`${artist.id}:${x.key}`));
+          if (!songs.length) continue;
+          const popular = songs.filter((x) => x.rank < 15);
+          const song = pick(popular.length ? popular : songs);
+          usedSongs.add(`${artist.id}:${song.key}`);
+          if (queue.length < want) queue.push({ ...song, key: artist.id });
+        } catch (err) {
+          failures++;
+          console.warn(err);
+        }
+        $("loading-text").textContent = `正在挑歌……${queue.length} / ${want}`;
+      }
+    };
+    $("loading-text").textContent = `正在從「${group.name}」挑歌……`;
+    await Promise.all([worker(), worker()]);
+
+    if (queue.length < Math.min(3, want)) {
+      $("loading-text").textContent =
+        failures >= tried / 2
+          ? "連不上 iTunes，抓不到歌曲。iTunes 每分鐘能查的次數有限，等一分鐘再試試看。"
+          : `「${group.name}」裡找得到歌的歌手太少了，換一個歌單試試看吧。`;
+      $("loading-actions").classList.remove("hidden");
+      return false;
+    }
+    if (queue.length < want) toast(`只挑到 ${queue.length} 首，這局就玩 ${queue.length} 題`);
+    state.queue = queue;
+    state.pool = queue;
+    return true;
+  }
+
+  function openGroupPicker() {
+    const box = $("group-list");
+    box.innerHTML = "";
+    const rounds = selectedRounds();
+    for (const group of window.GROUPS) {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "artist-row group-row";
+      const best = Number(storageGet(bestKey("artist", rounds, group.subject.id))) || 0;
+      const sample = group.artists
+        .slice(0, 4)
+        .map((id) => byId(id).name)
+        .join("、");
+      row.innerHTML = `
+        <span class="avatar group-avatar" aria-hidden="true"></span>
+        <span class="row-text"><span class="row-name"></span><span class="row-sub"></span></span>
+        <span class="row-best"></span>`;
+      const avatar = row.querySelector(".avatar");
+      avatar.textContent = group.icon;
+      avatar.style.background = `linear-gradient(135deg, ${group.colors.accent}, ${group.colors.accent2})`;
+      row.querySelector(".row-name").textContent = `${group.name}・${group.artists.length} 位`;
+      row.querySelector(".row-sub").textContent = group.id === "mix" ? group.desc : `${sample}……`;
+      row.querySelector(".row-best").textContent = best ? `最佳 ${best}` : "";
+      row.title = group.desc;
+      row.addEventListener("click", () => {
+        $("group-dialog").close();
+        state.group = group;
+        startGame("artist");
+      });
+      box.appendChild(row);
+    }
+    $("group-dialog").showModal();
+  }
+
   // ---------- 事件 ----------
   for (const card of document.querySelectorAll(".mode-card")) {
-    card.addEventListener("click", () => startGame(card.dataset.mode));
+    card.addEventListener("click", () => (card.dataset.mode === "artist" ? openGroupPicker() : startGame(card.dataset.mode)));
   }
+  $("group-close").addEventListener("click", () => $("group-dialog").close());
+  $("group-dialog").addEventListener("click", (e) => {
+    if (e.target === $("group-dialog")) $("group-dialog").close();
+  });
   for (const r of document.querySelectorAll('input[name="rounds"], input[name="level"]')) {
     r.addEventListener("change", renderBest);
   }
@@ -977,7 +1107,7 @@
     if (/^[1-4]$/.test(e.key) && !state.answered) {
       const btn = $("options").querySelectorAll(".option")[Number(e.key) - 1];
       if (btn) btn.click();
-    } else if (e.key === " " && e.target === document.body && state.mode === "audio") {
+    } else if (e.key === " " && e.target === document.body && usesAudio(state.mode)) {
       e.preventDefault();
       playClip(!state.answered);
     }

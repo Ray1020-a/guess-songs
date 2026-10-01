@@ -93,6 +93,16 @@
             </span>
             <span class="mode-best" data-best="fill"></span>
           </button>
+          <p class="side-label">C 面・猜歌手</p>
+          <button class="mode-card" data-mode="artist">
+            <span class="mode-num">C1</span>
+            <svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /><path d="M18 4c1.5 1 2.5 2.5 2.5 4.5M20.5 2c2 1.5 3 3.5 3 6.5" /></svg>
+            <span class="mode-text">
+              <span class="mode-name">猜歌手</span>
+              <span class="mode-desc">放一首歌，猜是誰唱的。四個選項都來自曲風相近的歌單。</span>
+            </span>
+            <span class="mode-go" aria-hidden="true">選歌單 ›</span>
+          </button>
         </div>
 
         <div class="settings">
@@ -220,6 +230,20 @@
       </div>
     </dialog>
 
+    <!-- 猜歌手：選歌單 -->
+    <dialog id="group-dialog" class="sheet" aria-labelledby="group-title">
+      <div class="sheet-body">
+        <div class="sheet-head">
+          <h2 id="group-title">選一個歌單</h2>
+          <span class="sheet-count">同歌單的歌手聲線、曲風相近</span>
+          <button id="group-close" class="icon-btn" aria-label="關閉">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+        <div id="group-list" class="results"></div>
+      </div>
+    </dialog>
+
     <!-- 分享成績圖 -->
     <dialog id="share-dialog" class="sheet share-sheet" aria-labelledby="share-title">
       <div class="sheet-body">
@@ -246,6 +270,7 @@
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="js/artists.js"></script>
+    <script src="js/groups.js"></script>
     <script src="js/clues/gaga.js"></script>
     <script src="js/clues/mj.js"></script>
     <script src="js/clues/bruno.js"></script>

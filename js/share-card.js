@@ -176,7 +176,7 @@
         ctx.font = font(800, Math.round(size * 0.3), DISPLAY);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(mode === "audio" ? `${h.seconds}s` : `${h.stage + 1}`, x + size / 2, y + size / 2 + 2);
+        ctx.fillText(h.seconds ? `${h.seconds}s` : `${h.stage + 1}`, x + size / 2, y + size / 2 + 2);
         ctx.textBaseline = "alphabetic";
       } else {
         ctx.fillStyle = "rgba(255,255,255,0.05)";
@@ -197,11 +197,11 @@
 
   async function render(data) {
     await loadFonts();
-    const { artist, mode, modeName, levelName, score, max, rank, history, isRecord, url } = data;
+    const { artist, mode, modeName, levelName, levelLabel = "難度", score, max, rank, history, isRecord, url } = data;
     // 聽歌模式看秒數；其他模式看用了幾段線索或提示
     const unit =
-      mode === "audio"
-        ? { stat: "平均聽", suffix: "秒", legend: "格子裡是每題聽了幾秒就猜中" }
+      mode === "audio" || mode === "artist"
+        ? { stat: "平均聽", suffix: "秒", legend: mode === "artist" ? "格子裡是每題聽了幾秒就認出歌手" : "格子裡是每題聽了幾秒就猜中" }
         : mode === "clue"
           ? { stat: "平均線索", suffix: "條", legend: "格子裡是每題用了幾條線索才猜中" }
           : { stat: "平均提示", suffix: "段", legend: "格子裡是每題看了幾段提示才答對" };
@@ -265,11 +265,11 @@
     // 三格數據
     const correct = history.filter((h) => h.correct);
     const statTop = 1230;
-    const avg = correct.length ? correct.reduce((sum, h) => sum + (mode === "audio" ? h.seconds : h.stage + 1), 0) / correct.length : null;
+    const avg = correct.length ? correct.reduce((sum, h) => sum + (h.seconds || h.stage + 1), 0) / correct.length : null;
     const stats = [
       ["答對", `${correct.length} / ${history.length}`],
       [unit.stat, avg == null ? "—" : `${trim(avg)} ${unit.suffix}`],
-      ["難度", levelName],
+      [levelLabel, levelName],
     ];
     const cellW = 300;
     const left = (W - cellW * 3) / 2;

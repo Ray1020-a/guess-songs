@@ -681,6 +681,18 @@ kbd {
   white-space: nowrap;
 }
 
+.group-avatar {
+  font-size: 20px;
+}
+
+.row-best {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
 .row-check {
   flex: none;
   color: var(--accent);
@@ -781,6 +793,13 @@ kbd {
 
 .mode-best:empty {
   display: none;
+}
+
+.mode-go {
+  flex: none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .settings {
