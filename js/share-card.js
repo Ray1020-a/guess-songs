@@ -1,19 +1,18 @@
 // 把一局的成績畫成 IG 限時動態尺寸（1080×1920，9:16）的圖片。
 // 重要資訊都放在上下各留 250px 的安全區之間，避免被 IG 的介面蓋住。
+// 顏色和網頁共用同一套（style.css 的 :root），成績圖看起來才像從網站裡拿出來的。
 (function () {
   const W = 1080;
   const H = 1920;
   const C = {
-    bg: "#0e0c10",
-    bg2: "#17141b",
-    text: "#f4efe6",
-    muted: "#a39d97",
-    faint: "#6f6a66",
-    line: "rgba(255, 248, 240, 0.12)",
-    good: "#3ddc97",
-    bad: "#ff5d6c",
-    vinyl: "#121014",
-    groove: "#1f1c22",
+    bg: "#15130f",
+    text: "#ebe3d5",
+    muted: "#a69d8f",
+    faint: "#70685d",
+    line: "rgba(255, 244, 228, 0.12)",
+    bad: "#d98b7c",
+    vinyl: "#121110",
+    groove: "#1d1b19",
   };
   const DISPLAY = '"Unbounded", "Noto Sans TC", sans-serif';
   const BODY = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
@@ -70,21 +69,135 @@
     ctx.closePath();
   }
 
-  function drawBackground(ctx, accent, accent2) {
+  // 和網頁一樣：暖色深底，上方一點點檯燈般的光
+  function drawBackground(ctx) {
     ctx.fillStyle = C.bg;
     ctx.fillRect(0, 0, W, H);
-    const glow = ctx.createRadialGradient(W / 2, 260, 0, W / 2, 260, 900);
-    glow.addColorStop(0, hexA(accent, 0.38));
-    glow.addColorStop(1, hexA(accent, 0));
+    const glow = ctx.createRadialGradient(W / 2, 120, 0, W / 2, 120, 1000);
+    glow.addColorStop(0, "rgba(255, 226, 184, 0.09)");
+    glow.addColorStop(1, "rgba(255, 226, 184, 0)");
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, W, H);
-    const glow2 = ctx.createRadialGradient(W, H, 0, W, H, 900);
-    glow2.addColorStop(0, hexA(accent2, 0.18));
-    glow2.addColorStop(1, hexA(accent2, 0));
-    ctx.fillStyle = glow2;
+  }
+
+  function makeCanvas(w, h) {
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    return canvas;
+  }
+
+  // 從圖片中央裁出指定長寬比的範圍
+  function centerCrop(img, aspect) {
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    return iw / ih > aspect ? [(iw - ih * aspect) / 2, 0, ih * aspect, ih] : [0, (ih - iw / aspect) / 2, iw, iw / aspect];
+  }
+
+  // 只在 0～1 之間淡入淡出的漸層遮罩，配合 destination-in 把圖片邊緣變透明
+  function fadeMask(ctx, x0, y0, x1, y1, stops) {
+    const g = ctx.createLinearGradient(x0, y0, x1, y1);
+    for (const [at, alpha] of stops) g.addColorStop(at, `rgba(0, 0, 0, ${alpha})`);
+    ctx.globalCompositeOperation = "destination-in";
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  // 專輯封面當背景：整張鋪一層糊掉的封面當底色，上半部再放清楚的封面，四邊霧化接進底色
+  function drawCoverBackground(ctx, img) {
+    // 先縮到很小再放大，等於很重的模糊；不用 ctx.filter，舊版 Safari 也畫得出來
+    const tiny = makeCanvas(18, 32);
+    const tinyCtx = tiny.getContext("2d");
+    tinyCtx.drawImage(img, ...centerCrop(img, W / H), 0, 0, 18, 32);
+    const mid = makeCanvas(135, 240);
+    const midCtx = mid.getContext("2d");
+    midCtx.imageSmoothingQuality = "high";
+    midCtx.drawImage(tiny, 0, 0, 135, 240);
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(mid, 0, 0, W, H);
+    ctx.fillStyle = hexA(C.bg, 0.5);
     ctx.fillRect(0, 0, W, H);
 
-    // 底片顆粒
+    const sharp = makeCanvas(W, W);
+    const sharpCtx = sharp.getContext("2d");
+    sharpCtx.imageSmoothingQuality = "high";
+    sharpCtx.drawImage(img, ...centerCrop(img, 1), 0, 0, W, W);
+    fadeMask(sharpCtx, 0, 0, 0, W, [[0, 0.35], [0.12, 1], [0.45, 1], [0.86, 0]]);
+    fadeMask(sharpCtx, 0, 0, W, 0, [[0, 0], [0.14, 1], [0.86, 1], [1, 0]]);
+    ctx.globalAlpha = 0.9;
+    ctx.drawImage(sharp, 0, 0);
+    ctx.globalAlpha = 1;
+
+    // 上方壓暗一點給標題，下半部壓暗給分數與格子
+    const top = ctx.createLinearGradient(0, 0, 0, 340);
+    top.addColorStop(0, hexA(C.bg, 0.6));
+    top.addColorStop(1, hexA(C.bg, 0));
+    ctx.fillStyle = top;
+    ctx.fillRect(0, 0, W, 340);
+    const bottom = ctx.createLinearGradient(0, 560, 0, 1060);
+    bottom.addColorStop(0, hexA(C.bg, 0));
+    bottom.addColorStop(1, hexA(C.bg, 0.72));
+    ctx.fillStyle = bottom;
+    ctx.fillRect(0, 560, W, 500);
+    ctx.fillStyle = hexA(C.bg, 0.72);
+    ctx.fillRect(0, 1060, W, H - 1060);
+
+    // 四角暗角，讓畫面往中間收
+    const vignette = ctx.createRadialGradient(W / 2, H * 0.42, 420, W / 2, H * 0.42, 1250);
+    vignette.addColorStop(0, hexA(C.bg, 0));
+    vignette.addColorStop(1, hexA(C.bg, 0.55));
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, W, H);
+    return coverTint(tinyCtx);
+  }
+
+  // 從封面取一個柔和的主色給分數和格子用，才不會和封面撞色。
+  // 越鮮豔、越亮的像素權重越高，灰階封面就會得到淡淡的灰。
+  function coverTint(tinyCtx) {
+    const d = tinyCtx.getImageData(0, 0, tinyCtx.canvas.width, tinyCtx.canvas.height).data;
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    let total = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      const max = Math.max(d[i], d[i + 1], d[i + 2]);
+      const min = Math.min(d[i], d[i + 1], d[i + 2]);
+      const weight = 0.05 + (max ? (max - min) / max : 0) * (max / 255);
+      r += d[i] * weight;
+      g += d[i + 1] * weight;
+      b += d[i + 2] * weight;
+      total += weight;
+    }
+    const [h, sat] = rgbToHsl(r / total, g / total, b / total);
+    return { accent: hslToHex(h, Math.min(sat, 0.48), 0.72), onAccent: hslToHex(h, Math.min(sat, 0.35), 0.12) };
+  }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    if (max === min) return [0, 0, l];
+    const d = max - min;
+    const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    const h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return [h / 6, s, l];
+  }
+
+  function hslToHex(h, s, l) {
+    const f = (n) => {
+      const k = (n + h * 12) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const v = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+      return Math.round(v * 255).toString(16).padStart(2, "0");
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  }
+
+  function drawGrain(ctx) {
     const rand = mulberry32(7);
     for (let i = 0; i < 9000; i++) {
       ctx.fillStyle = rand() > 0.5 ? "rgba(255,255,255,0.035)" : "rgba(0,0,0,0.12)";
@@ -155,7 +268,7 @@
   }
 
   // Wordle 式的答題格子：答對的格子寫幾秒／幾條線索
-  function drawGrid(ctx, history, mode, top, accent) {
+  function drawGrid(ctx, history, mode, top, accent, onAccent) {
     const n = history.length;
     const perRow = n <= 10 ? Math.min(n, 5) : 10;
     const gap = 14;
@@ -172,14 +285,14 @@
         // 越快答對顏色越飽和
         ctx.fillStyle = h.stage === 0 ? accent : hexA(accent, 0.75 - h.stage * 0.15);
         ctx.fill();
-        ctx.fillStyle = "#0e0c10";
+        ctx.fillStyle = onAccent;
         ctx.font = font(800, Math.round(size * 0.3), DISPLAY);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(h.seconds ? `${h.seconds}s` : `${h.stage + 1}`, x + size / 2, y + size / 2 + 2);
         ctx.textBaseline = "alphabetic";
       } else {
-        ctx.fillStyle = "rgba(255,255,255,0.05)";
+        ctx.fillStyle = "rgba(255, 244, 228, 0.06)";
         ctx.fill();
         ctx.strokeStyle = C.line;
         ctx.lineWidth = 2;
@@ -197,7 +310,7 @@
 
   async function render(data) {
     await loadFonts();
-    const { artist, mode, modeName, levelName, levelLabel = "難度", score, max, rank, history, isRecord, url } = data;
+    const { artist, mode, modeName, levelName, levelLabel = "難度", score, max, rank, history, isRecord, url, cover } = data;
     // 聽歌模式看秒數；其他模式看用了幾段線索或提示
     const unit =
       mode === "audio" || mode === "artist"
@@ -205,14 +318,20 @@
         : mode === "clue"
           ? { stat: "平均線索", suffix: "條", legend: "格子裡是每題用了幾條線索才猜中" }
           : { stat: "平均提示", suffix: "段", legend: "格子裡是每題看了幾段提示才答對" };
-    const accent = artist.colors.accent;
+    let accent = artist.colors.accent;
     const accent2 = artist.colors.accent2;
-    const canvas = document.createElement("canvas");
-    canvas.width = W;
-    canvas.height = H;
+    let onAccent = artist.colors.onAccent;
+    const canvas = makeCanvas(W, H);
     const ctx = canvas.getContext("2d");
 
-    drawBackground(ctx, accent, accent2);
+    if (cover) ({ accent, onAccent } = drawCoverBackground(ctx, cover));
+    else drawBackground(ctx);
+    drawGrain(ctx);
+    // 封面當背景時底下有圖案，字加一點陰影才讀得清楚
+    if (cover) {
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      ctx.shadowBlur = 28;
+    }
 
     ctx.fillStyle = C.muted;
     ctx.font = font(600, 30, MONO);
@@ -222,7 +341,8 @@
     ctx.textAlign = "center";
     ctx.fillText(modeName, W / 2, 222);
 
-    drawVinyl(ctx, W / 2, 460, 190, accent, accent2, artist.icon);
+    // 有封面就讓封面當主角，不再疊一張唱片
+    if (!cover) drawVinyl(ctx, W / 2, 460, 190, accent, accent2, artist.icon);
 
     fitText(ctx, window.withName(artist.short, "猜歌王"), W / 2, 760, {
       weight: 800,
@@ -283,7 +403,7 @@
     }
     stats.forEach(([label, value], i) => drawStat(ctx, left + cellW * i, statTop, cellW, label, value));
 
-    const gridBottom = drawGrid(ctx, history, mode, 1390, accent);
+    const gridBottom = drawGrid(ctx, history, mode, 1390, accent, onAccent);
 
     ctx.fillStyle = C.faint;
     ctx.font = font(500, 26, BODY);

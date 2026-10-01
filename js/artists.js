@@ -2,15 +2,15 @@
 // 沒寫到的欄位（tagline、ranks、colors、icon、countries）會用所屬地區的預設值。
 
 window.REGIONS = [
-  { id: "tw", name: "台灣", icon: "🎤", countries: ["tw", "us"], colors: { accent: "#4fd1c5", accent2: "#9be8a8", onAccent: "#04201e" } },
-  { id: "twh", name: "台語", icon: "🏮", countries: ["tw", "us"], colors: { accent: "#ff9f43", accent2: "#ffd36b", onAccent: "#1f1102" } },
-  { id: "cn", name: "中國", icon: "🐉", countries: ["tw", "cn", "us"], colors: { accent: "#ff5a4f", accent2: "#ffc15e", onAccent: "#260402" } },
-  { id: "jp", name: "日本", icon: "🌸", countries: ["tw", "jp", "us"], colors: { accent: "#ff6b8b", accent2: "#ffb7c5", onAccent: "#2a0610" } },
-  { id: "kr", name: "韓國", icon: "💜", countries: ["tw", "kr", "us"], colors: { accent: "#9b8cff", accent2: "#5fe1ff", onAccent: "#0d0a2a" } },
-  { id: "west", name: "歐美", icon: "🎸", countries: ["tw", "us"], colors: { accent: "#7c8cff", accent2: "#c77dff", onAccent: "#0b0b2a" } },
-  { id: "latin", name: "拉丁", icon: "🌶️", countries: ["tw", "us", "mx"], colors: { accent: "#ffc23d", accent2: "#ff5e5b", onAccent: "#241500" } },
-  { id: "in", name: "印度", icon: "🪷", countries: ["in", "us"], colors: { accent: "#ff9933", accent2: "#2ec4b6", onAccent: "#1f1000" } },
-  { id: "th", name: "泰國", icon: "🐘", countries: ["th", "us"], colors: { accent: "#e0b83a", accent2: "#5ab0ff", onAccent: "#1a1404" } },
+  { id: "tw", name: "台灣", icon: "🎤", countries: ["tw", "us"], colors: { accent: "#86d5cd", accent2: "#b9dfbf", onAccent: "#142927" } },
+  { id: "twh", name: "台語", icon: "🏮", countries: ["tw", "us"], colors: { accent: "#d5ad86", accent2: "#dfd4b9", onAccent: "#291e14" } },
+  { id: "cn", name: "中國", icon: "🐉", countries: ["tw", "cn", "us"], colors: { accent: "#d58b86", accent2: "#dfd0b9", onAccent: "#291514" } },
+  { id: "jp", name: "日本", icon: "🌸", countries: ["tw", "jp", "us"], colors: { accent: "#d58697", accent2: "#dfb9c0", onAccent: "#291419" } },
+  { id: "kr", name: "韓國", icon: "💜", countries: ["tw", "kr", "us"], colors: { accent: "#9086d5", accent2: "#b9d8df", onAccent: "#171429" } },
+  { id: "west", name: "歐美", icon: "🎸", countries: ["tw", "us"], colors: { accent: "#8690d5", accent2: "#cfb9df", onAccent: "#141729" } },
+  { id: "latin", name: "拉丁", icon: "🌶️", countries: ["tw", "us", "mx"], colors: { accent: "#d5bc86", accent2: "#dfb9b9", onAccent: "#292314" } },
+  { id: "in", name: "印度", icon: "🪷", countries: ["in", "us"], colors: { accent: "#d5ad86", accent2: "#b9dfdc", onAccent: "#291f14" } },
+  { id: "th", name: "泰國", icon: "🐘", countries: ["th", "us"], colors: { accent: "#d5c286", accent2: "#b9cddf", onAccent: "#292414" } },
 ];
 
 window.ARTISTS = [
@@ -31,7 +31,7 @@ window.ARTISTS = [
     name: "蕭煌奇",
     terms: ["蕭煌奇"],
     match: /蕭煌奇|萧煌奇|ricky hsiao/i,
-    colors: { accent: "#3cc6c0", accent2: "#8fe3a8", onAccent: "#04201e" },
+    colors: { accent: "#86d5d1", accent2: "#b9dfc4", onAccent: "#142928" },
   },
 
   // ---------- 台語 ----------
@@ -52,7 +52,7 @@ window.ARTISTS = [
     match: /yoasobi/i,
     // E-SIDE 系列是英文版，歌名不同但旋律一樣，排除以免選項重複
     excludeCollection: /e-side/i,
-    colors: { accent: "#6f95ff", accent2: "#ff7ac8", onAccent: "#ffffff" },
+    colors: { accent: "#869bd5", accent2: "#dfb9cf", onAccent: "#141a29" },
     ranks: ["Ayase 和 ikura 本人？🌙", "資深 YOASOBI 迷 📖", "剛讀完第一本 THE BOOK 📘", "先去把《THE BOOK》聽完再來 📀"],
   },
   { region: "jp", id: "yonezu", name: "米津玄師", terms: ["米津玄師", "Kenshi Yonezu"], match: /米津玄師|米津玄师|kenshi yonezu/i },
@@ -81,7 +81,7 @@ window.ARTISTS = [
     excludeCollection: /top gun/i,
     // 《Chromatica》的三段管弦樂間奏很好玩，雖然很短也保留
     allowShort: /^chromatica i+$/i,
-    colors: { accent: "#ff2d95", accent2: "#b46bff", onAccent: "#ffffff" },
+    colors: { accent: "#d586ad", accent2: "#ccb9df", onAccent: "#29141e" },
     ranks: ["Mother Monster 本人？👑", "資深 Little Monster 🐾", "還在練舞的 Monster 💃", "先去把《The Fame》聽完再來 📀"],
   },
   {
@@ -93,7 +93,7 @@ window.ARTISTS = [
     tagline: "你跟得上 King of Pop 的舞步嗎？",
     terms: ["michael jackson"],
     match: /michael jackson/i,
-    colors: { accent: "#f2c14e", accent2: "#fff1c9", onAccent: "#1a1206" },
+    colors: { accent: "#d5bd86", accent2: "#dfd5b9", onAccent: "#292314" },
     ranks: ["King of Pop 本人？👑", "月球漫步大師 🕺", "還在練 moonwalk 的新手 🧦", "先去把《Thriller》聽完再來 📀"],
   },
   {
@@ -105,7 +105,7 @@ window.ARTISTS = [
     tagline: "你是真正的 Hooligan 嗎？",
     terms: ["bruno mars"],
     match: /bruno mars/i,
-    colors: { accent: "#ff7a3d", accent2: "#ffc857", onAccent: "#1a0c05" },
+    colors: { accent: "#d59f86", accent2: "#dfd3b9", onAccent: "#291b14" },
     ranks: ["Bruno 本人？🎩", "資深 Hooligan 🕶️", "剛戴上 24K 金鍊的新手 🪙", "先去把《Doo-Wops & Hooligans》聽完再來 📀"],
   },
   {
@@ -117,7 +117,7 @@ window.ARTISTS = [
     tagline: "你是真正的 Arianator 嗎？",
     terms: ["ariana grande"],
     match: /ariana grande/i,
-    colors: { accent: "#c9a3ff", accent2: "#ffb3d9", onAccent: "#1b0f2b" },
+    colors: { accent: "#a786d5", accent2: "#dfb9cc", onAccent: "#1d1429" },
     ranks: ["Ariana 本人？🎀", "資深 Arianator 💜", "正在綁高馬尾的新手 🎀", "先去把《thank u, next》聽完再來 📀"],
   },
   { region: "west", id: "taylor", name: "Taylor Swift", short: "Taylor", tagline: "你是真正的 Swiftie 嗎？", terms: ["Taylor Swift"], match: /taylor swift/i },

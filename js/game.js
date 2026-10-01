@@ -917,6 +917,9 @@
       artistId: state.mode === "artist" ? song.key : null,
       stage: state.stage,
       seconds: usesAudio(state.mode) ? clipSeconds()[state.stage] : null,
+      // 成績圖可以拿這一局出現過的專輯封面當背景
+      artwork: song.artwork || null,
+      album: song.album || "",
     });
 
     for (const b of $("options").querySelectorAll(".option")) {
@@ -1038,16 +1041,141 @@
 
   const shareUrl = () => `${location.href.split("#")[0]}#${state.artist.id}`;
   let shareFile = null;
+  let shareObjectUrl = null;
+  // 每次重畫都換一個號碼，舊的、比較慢畫完的那張就不會蓋掉新的
+  let shareToken = 0;
+
+  // ---------- 成績圖背景：預設的唱片，或這位歌手的專輯封面 ----------
+  const COVER_MAX = 8;
+  // iTunes 的封面網址可以直接改尺寸；縮圖用小張，畫成績圖用大張
+  const coverUrl = (url, size) => url.replace(/\d+x\d+(bb)?\.(jpg|png|webp)/, `${size}x${size}bb.jpg`);
+  const coverImages = new Map();
+  const shareBg = { covers: [], selected: null };
+
+  // 這一局出現過的專輯排前面，不夠再從歌手的歌曲清單補熱門專輯
+  function coverChoices(extra = []) {
+    const seen = new Set();
+    const out = [];
+    const add = (url, album) => {
+      if (!url) return;
+      const key = (album || url).toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ url, album });
+    };
+    for (const h of state.history) add(h.artwork, h.album);
+    if (state.mode !== "artist") {
+      const pool = itunesCache.get(state.artist.id) || readSongCache(state.artist) || extra;
+      for (const s of [...pool].sort((a, b) => a.rank - b.rank)) add(s.artwork, s.album);
+    }
+    return out.slice(0, COVER_MAX);
+  }
+
+  // 要畫進 canvas 的圖片必須用 crossOrigin 載入，否則 canvas 會被汙染、存不成圖
+  function loadImage(url) {
+    if (coverImages.has(url)) return coverImages.get(url);
+    const promise = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error(`載不到圖片：${url}`));
+      img.src = url;
+    });
+    promise.catch(() => coverImages.delete(url));
+    coverImages.set(url, promise);
+    return promise;
+  }
+
+  function renderBgChoices() {
+    const box = $("share-bgs");
+    box.innerHTML = "";
+    const options = [{ url: null, album: "唱片" }, ...shareBg.covers];
+    for (const c of options) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "bg-thumb";
+      btn.dataset.url = c.url || "";
+      btn.setAttribute("role", "radio");
+      btn.setAttribute("aria-checked", String(c.url === shareBg.selected));
+      btn.setAttribute("aria-label", c.url ? `用《${c.album}》的封面當背景` : "用唱片當背景");
+      btn.title = c.url ? c.album : "唱片";
+      if (c.url) {
+        const img = document.createElement("img");
+        img.alt = "";
+        img.crossOrigin = "anonymous";
+        img.src = coverUrl(c.url, 200);
+        // 載不到（或不允許跨網域使用）的封面就不提供，反正也畫不進成績圖
+        img.addEventListener("error", () => {
+          shareBg.covers = shareBg.covers.filter((x) => x !== c);
+          btn.remove();
+          $("share-bg").classList.toggle("hidden", !shareBg.covers.length);
+        });
+        btn.appendChild(img);
+      } else {
+        btn.classList.add("bg-vinyl");
+      }
+      btn.addEventListener("click", () => selectBg(c.url));
+      box.appendChild(btn);
+    }
+    $("share-bg").classList.toggle("hidden", !shareBg.covers.length);
+  }
+
+  function selectBg(url) {
+    if (url === shareBg.selected) return;
+    shareBg.selected = url;
+    for (const b of $("share-bgs").children) b.setAttribute("aria-checked", String(b.dataset.url === (url || "")));
+    renderShare();
+  }
+
+  // 只用到手寫題庫、沒抓過 iTunes 的話，背景候選會是空的；背景再查一次熱門歌補封面
+  async function fillCoversLater() {
+    if (state.mode === "artist" || shareBg.covers.length >= 3) return;
+    try {
+      const songs = await quickSongs(state.artist);
+      if (!$("share-dialog").open) return;
+      shareBg.covers = coverChoices(songs);
+      renderBgChoices();
+    } catch {
+      /* 查不到就只有唱片背景 */
+    }
+  }
 
   // 打開預覽視窗，當場把成績畫成限動尺寸的圖
-  async function share() {
-    const dialog = $("share-dialog");
+  function share() {
+    shareBg.covers = coverChoices();
+    shareBg.selected = null;
+    $("share-img").classList.add("hidden");
+    renderBgChoices();
+    $("share-dialog").showModal();
+    renderShare();
+    fillCoversLater();
+  }
+
+  async function renderShare() {
+    const token = ++shareToken;
     const img = $("share-img");
     shareFile = null;
-    img.classList.add("hidden");
-    $("share-loading").classList.remove("hidden");
+    // 換背景時先留著上一張、淡一點，畫好再換掉，不會整個閃一下
+    const first = img.classList.contains("hidden");
+    if (first) {
+      $("share-loading").textContent = "正在畫成績圖……";
+      $("share-loading").classList.remove("hidden");
+    }
+    $("share-preview").classList.add("busy");
     $("btn-share-image").disabled = true;
-    dialog.showModal();
+    $("btn-download").removeAttribute("href");
+
+    let cover = null;
+    if (shareBg.selected) {
+      try {
+        cover = await loadImage(coverUrl(shareBg.selected, 1000));
+      } catch {
+        // 大張載不到就退回縮圖那張，再不行就用唱片
+        cover = await loadImage(coverUrl(shareBg.selected, 200)).catch(() => null);
+        if (!cover && token === shareToken) toast("這張封面載不下來，先用唱片背景");
+      }
+      if (token !== shareToken) return;
+    }
 
     try {
       const canvas = await window.ShareCard.render({
@@ -1062,15 +1190,20 @@
         isRecord: state.lastResult.isRecord,
         history: state.history,
         url: shareUrl().replace(/^https?:\/\//, ""),
+        cover,
       });
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (token !== shareToken) return;
+      if (!blob) throw new Error("成績圖轉不成圖片");
       const name = `${subject().id}-${state.score}.png`;
       shareFile = new File([blob], name, { type: "image/png" });
-      const objectUrl = URL.createObjectURL(blob);
-      img.src = objectUrl;
+      if (shareObjectUrl) URL.revokeObjectURL(shareObjectUrl);
+      shareObjectUrl = URL.createObjectURL(blob);
+      img.src = shareObjectUrl;
       img.classList.remove("hidden");
       $("share-loading").classList.add("hidden");
-      $("btn-download").href = objectUrl;
+      $("share-preview").classList.remove("busy");
+      $("btn-download").href = shareObjectUrl;
       $("btn-download").download = name;
 
       // 不支援分享檔案的瀏覽器（多半是電腦）就只留下載
@@ -1082,7 +1215,11 @@
         : "下載後就能上傳到 IG 限時動態。";
     } catch (err) {
       console.error(err);
+      if (token !== shareToken) return;
+      img.classList.add("hidden");
+      $("share-preview").classList.remove("busy");
       $("share-loading").textContent = "成績圖畫不出來，先用「複製文字」分享吧。";
+      $("share-loading").classList.remove("hidden");
     }
   }
 
