@@ -57,6 +57,25 @@
           <div id="quick-artists" class="quick-artists" aria-label="快速換歌手"></div>
         </section>
 
+        <div class="settings">
+          <fieldset class="segmented">
+            <legend class="label">難度</legend>
+            <div class="segments">
+              <label><input type="radio" name="level" value="hits" /><span>經典</span></label>
+              <label><input type="radio" name="level" value="all" checked /><span>混合</span></label>
+              <label><input type="radio" name="level" value="deep" /><span>冷門</span></label>
+            </div>
+          </fieldset>
+          <fieldset class="segmented">
+            <legend class="label">題數</legend>
+            <div class="segments">
+              <label><input type="radio" name="rounds" value="5" /><span>5</span></label>
+              <label><input type="radio" name="rounds" value="10" checked /><span>10</span></label>
+              <label><input type="radio" name="rounds" value="20" /><span>20</span></label>
+            </div>
+          </fieldset>
+        </div>
+
         <div class="modes">
           <span class="label">選玩法</span>
           <button class="mode-card" data-mode="audio">
@@ -93,25 +112,6 @@
               <span class="mode-name">猜歌手</span>
             </span>
           </button>
-        </div>
-
-        <div class="settings">
-          <fieldset class="segmented">
-            <legend class="label">難度</legend>
-            <div class="segments">
-              <label><input type="radio" name="level" value="hits" /><span>經典</span></label>
-              <label><input type="radio" name="level" value="all" checked /><span>混合</span></label>
-              <label><input type="radio" name="level" value="deep" /><span>冷門</span></label>
-            </div>
-          </fieldset>
-          <fieldset class="segmented">
-            <legend class="label">題數</legend>
-            <div class="segments">
-              <label><input type="radio" name="rounds" value="5" /><span>5</span></label>
-              <label><input type="radio" name="rounds" value="10" checked /><span>10</span></label>
-              <label><input type="radio" name="rounds" value="20" /><span>20</span></label>
-            </div>
-          </fieldset>
         </div>
 
         <p class="fineprint">試聽片段由 Apple iTunes 提供，版權屬原權利人所有。</p>
