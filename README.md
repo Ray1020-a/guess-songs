@@ -63,6 +63,16 @@ js/share-card.js 產生限動尺寸的成績圖
 js/game.js      遊戲流程與計分
 ```
 
+## 更新網站
+
+改完 `style.css` 或 `js/` 底下的檔案後，推送前先跑：
+
+```bash
+python3 scripts/bump-version.py
+```
+
+它會在 `index.html` 引用的 CSS／JS 網址後面加上新的版本號，避免瀏覽器拿到新網頁卻配上快取裡的舊樣式。
+
 ## 新增歌手
 
 在 `js/artists.js` 加一筆資料（`region` 地區、`terms` 搜尋關鍵字、`match` 比對 iTunes 歌手名稱的規則）即可，聽歌模式馬上能玩；想要手寫線索的話，再照 `js/clues/gaga.js` 的格式新增檔案，並在 `index.html` 引入。
