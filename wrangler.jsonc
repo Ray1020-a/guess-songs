@@ -1,0 +1,19 @@
+// Cloudflare Workers 部署設定：整個網站都是靜態檔，直接把 repo 根目錄當成網站上傳。
+// 不想上傳的檔案（說明文件、工具腳本、這份設定本身）列在 .assetsignore。
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "guess-songs",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./"
+  },
+  // 正式站的網域；main 以外的分支走 Workers Builds 的預覽，不會碰到這個網域
+  "routes": [
+    {
+      "pattern": "guesssong.party",
+      "custom_domain": true
+    }
+  ],
+  // 預覽沿用上面的設定就好，留空即可（npx wrangler preview 需要這個區塊）
+  "previews": {}
+}

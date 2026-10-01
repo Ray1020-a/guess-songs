@@ -49,7 +49,15 @@
 npx http-server .
 ```
 
-也可以直接開啟 GitHub Pages（Settings → Pages → Deploy from branch）。
+## 部署
+
+網站放在 Cloudflare Workers（`guesssong.party`），設定在 `wrangler.jsonc`。repo 已接上 Workers Builds：
+
+- 推到 `main` 會自動部署到正式站。
+- 推到其他分支會建一個預覽網址，PR 底下的 `Workers Builds` 檢查可以點進去看。
+- `.assetsignore` 列出不上傳的檔案（說明文件、工具腳本、設定檔）。
+
+手動部署：`npx wrangler deploy`。
 
 ## 檔案結構
 
