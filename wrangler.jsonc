@@ -6,5 +6,14 @@
   "compatibility_date": "2026-09-01",
   "assets": {
     "directory": "./"
-  }
+  },
+  // 正式站的網域；main 以外的分支走 Workers Builds 的預覽，不會碰到這個網域
+  "routes": [
+    {
+      "pattern": "guesssong.party",
+      "custom_domain": true
+    }
+  ],
+  // 預覽沿用上面的設定就好，留空即可（npx wrangler preview 需要這個區塊）
+  "previews": {}
 }

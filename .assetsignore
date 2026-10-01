@@ -4,7 +4,6 @@
 node_modules
 scripts
 README.md
-CNAME
 wrangler.jsonc
 .assetsignore
 .wrangler
