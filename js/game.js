@@ -1073,6 +1073,7 @@
   for (const card of document.querySelectorAll(".mode-card")) {
     card.addEventListener("click", () => (card.dataset.mode === "artist" ? openGroupPicker() : startGame(card.dataset.mode)));
   }
+  $("btn-guess-artist").addEventListener("click", openGroupPicker);
   $("group-close").addEventListener("click", () => $("group-dialog").close());
   $("group-dialog").addEventListener("click", (e) => {
     if (e.target === $("group-dialog")) $("group-dialog").close();
