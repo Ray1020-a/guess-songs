@@ -13,7 +13,7 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+TC:wght@400;500;700;900&family=Unbounded:wght@600;800&display=swap"
     />
-    <link rel="stylesheet" href="style.css?v=202610010443" />
+    <link rel="stylesheet" href="style.css?v=202610011300" />
   </head>
   <body>
     <main class="app">
@@ -21,10 +21,6 @@
       <section id="screen-home" class="screen active">
         <div class="home-bar">
           <span class="eyebrow">GUESS THE SONG</span>
-          <button id="btn-guess-artist" class="corner-btn" aria-haspopup="dialog" aria-controls="group-dialog">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
-            <span>猜歌手</span>
-          </button>
         </div>
         <header class="hero">
           <div class="vinyl vinyl-hero" aria-hidden="true">
@@ -47,7 +43,7 @@
               </span>
               <span class="trigger-action">換歌手<kbd>/</kbd></span>
             </button>
-            <button id="btn-random" class="dice-btn" aria-label="隨機抽一位歌手" title="隨機抽一位歌手">
+            <button id="btn-random" class="dice-btn" aria-label="抽三位歌手來選" title="不知道選誰？抽三位來選" aria-haspopup="dialog" aria-controls="draw-dialog">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
                 <circle cx="8.5" cy="8.5" r="1.2" />
@@ -58,6 +54,7 @@
               </svg>
             </button>
           </div>
+          <div id="quick-artists" class="quick-artists" aria-label="快速換歌手"></div>
         </section>
 
         <div class="modes">
@@ -120,6 +117,19 @@
           </fieldset>
         </div>
         <p class="hint">經典只考熱門單曲，冷門只考專輯歌與合作曲這些非主打。</p>
+
+        <!-- 猜歌手跟上面選的歌手無關，放在分隔線下面當隱藏曲 -->
+        <div class="modes bonus">
+          <p class="side-label">隱藏曲・猜歌手</p>
+          <button id="btn-guess-artist" class="mode-card" aria-haspopup="dialog" aria-controls="group-dialog">
+            <span class="mode-num">✦</span>
+            <svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+            <span class="mode-text">
+              <span class="mode-name">猜歌手</span>
+              <span class="mode-desc">選一個歌單，聽一段猜是誰唱的。順便找找下一位想玩的歌手。</span>
+            </span>
+          </button>
+        </div>
 
         <p class="fineprint">試聽片段由 Apple iTunes 提供，版權屬原權利人所有。</p>
       </section>
@@ -198,6 +208,7 @@
         <p class="result-score"><span id="result-score">0</span><span id="result-max" class="result-max"></span></p>
         <p id="result-title" class="result-title"></p>
         <p id="result-sub" class="result-sub"></p>
+        <p id="result-hint" class="result-hint hidden">喜歡哪個聲音？點「玩這位」直接換成那位歌手，接著玩猜歌名。</p>
         <ol id="result-list" class="result-list"></ol>
         <div class="result-actions">
           <button id="btn-again" class="primary">再玩一次</button>
@@ -223,6 +234,25 @@
         </div>
         <div id="artist-tabs" class="tabs" role="tablist" aria-label="分類"></div>
         <div id="artist-results" class="results" role="listbox" aria-label="歌手清單"></div>
+      </div>
+    </dialog>
+
+    <!-- 不知道選誰：抽三位來選 -->
+    <dialog id="draw-dialog" class="sheet draw-sheet" aria-labelledby="draw-title">
+      <div class="sheet-body">
+        <div class="sheet-head">
+          <h2 id="draw-title">抽歌手</h2>
+          <span class="sheet-count">抽三位，挑一位順眼的</span>
+          <button id="draw-close" class="icon-btn" aria-label="關閉">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+        <p class="draw-label">從哪裡抽</p>
+        <div id="draw-scopes" class="tabs" role="tablist" aria-label="抽歌手的範圍"></div>
+        <div id="draw-cards" class="draw-cards" role="listbox" aria-label="抽到的歌手"></div>
+        <div class="draw-actions">
+          <button id="btn-redraw" class="secondary">🎲 再抽三位</button>
+        </div>
       </div>
     </dialog>
 
@@ -265,16 +295,16 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script src="js/artists.js?v=202610010443"></script>
-    <script src="js/groups.js?v=202610010443"></script>
-    <script src="js/clues/gaga.js?v=202610010443"></script>
-    <script src="js/clues/mj.js?v=202610010443"></script>
-    <script src="js/clues/bruno.js?v=202610010443"></script>
-    <script src="js/clues/ariana.js?v=202610010443"></script>
-    <script src="js/clues/yoasobi.js?v=202610010443"></script>
-    <script src="js/itunes.js?v=202610010443"></script>
-    <script src="js/lyrics.js?v=202610010443"></script>
-    <script src="js/share-card.js?v=202610010443"></script>
-    <script src="js/game.js?v=202610010443"></script>
+    <script src="js/artists.js?v=202610011300"></script>
+    <script src="js/groups.js?v=202610011300"></script>
+    <script src="js/clues/gaga.js?v=202610011300"></script>
+    <script src="js/clues/mj.js?v=202610011300"></script>
+    <script src="js/clues/bruno.js?v=202610011300"></script>
+    <script src="js/clues/ariana.js?v=202610011300"></script>
+    <script src="js/clues/yoasobi.js?v=202610011300"></script>
+    <script src="js/itunes.js?v=202610011300"></script>
+    <script src="js/lyrics.js?v=202610011300"></script>
+    <script src="js/share-card.js?v=202610011300"></script>
+    <script src="js/game.js?v=202610011300"></script>
   </body>
 </html>

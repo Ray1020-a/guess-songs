@@ -279,34 +279,6 @@ button:disabled {
   gap: 12px;
 }
 
-/* 右上角的「猜歌手」入口：跟目前歌手無關的模式，所以獨立放在最上面 */
-.corner-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px 8px 11px;
-  border-radius: 12px;
-  border: 1px solid var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-  font-size: 14px;
-  font-weight: 700;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.corner-btn:hover {
-  background: var(--accent);
-  color: var(--on-accent);
-}
-
-.corner-btn svg {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-}
 .hero {
   display: flex;
   flex-direction: column;
@@ -467,6 +439,66 @@ kbd {
 .dice-btn svg circle {
   fill: currentColor;
   stroke: none;
+}
+
+/* 首頁的快速換歌手：最近玩過的（第一次來就是百大前幾名） */
+.quick-artists {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 2px -16px 0;
+  padding: 2px 16px;
+}
+
+.quick-artists::-webkit-scrollbar {
+  display: none;
+}
+
+.quick-label {
+  flex: none;
+  margin-right: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+
+.quick-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 150px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.quick-chip:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.quick-chip .avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+  box-shadow: none;
+}
+
+.quick-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* 換歌手時首頁唱片快轉一下 */
@@ -728,6 +760,65 @@ kbd {
   color: var(--accent);
 }
 
+/* 抽歌手面板：比選歌手面板矮，只放範圍、三張卡、再抽一次 */
+/* 對話框要用 fit-content 才會縮到內容高度，auto 會被撐滿整個畫面 */
+.draw-sheet {
+  height: fit-content;
+}
+
+.draw-sheet .sheet-body {
+  height: auto;
+}
+
+.draw-label {
+  margin: 0 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+
+.draw-sheet .tabs {
+  padding-top: 4px;
+}
+
+.draw-cards {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.artist-row.draw-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.artist-row.draw-card:hover {
+  border-color: var(--accent);
+}
+
+.draw-card .avatar {
+  width: 48px;
+  height: 48px;
+  font-size: 15px;
+}
+
+.draw-card .row-name {
+  font-size: 17px;
+}
+
+.draw-card .row-check {
+  font-size: 13px;
+}
+
+.draw-actions {
+  display: flex;
+  justify-content: center;
+  padding: 0 16px 20px;
+}
+
 .row-check {
   flex: none;
   color: var(--accent);
@@ -823,6 +914,17 @@ kbd {
   font-size: 11px;
   font-weight: 600;
   line-height: 1.4;
+  color: var(--accent);
+}
+
+/* 猜歌手放在分隔線下面，跟上面選的歌手、難度無關 */
+.modes.bonus {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px dashed var(--line);
+}
+
+.bonus .mode-num {
   color: var(--accent);
 }
 
@@ -1482,6 +1584,32 @@ kbd {
 .rl-title {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.result-list li.has-play {
+  grid-template-columns: 28px 1fr auto auto;
+}
+
+.rl-play {
+  align-self: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rl-play:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.result-hint {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .rl-mark {
