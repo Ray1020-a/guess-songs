@@ -102,6 +102,7 @@ button:disabled {
 
 h1 {
   margin: 8px 0 4px;
+  text-wrap: balance;
   font-size: clamp(36px, 10vw, 52px);
   font-weight: 900;
   letter-spacing: 0.02em;
@@ -117,6 +118,7 @@ h1 {
 }
 
 .section-label {
+  display: block;
   margin: 0 0 8px;
   text-align: center;
   color: var(--muted);
@@ -128,34 +130,62 @@ h1 {
   margin-top: 24px;
 }
 
-.artist-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
+.select-wrap {
+  position: relative;
 }
 
-.artist-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 999px;
+/* 自畫箭頭，讓下拉選單在各平台長得一樣 */
+.select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+#artist-select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 14px 44px 14px 16px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--surface);
-  font-size: 14px;
-  font-weight: 600;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  color: var(--text);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.artist-chip:hover {
+#artist-select:hover {
   border-color: var(--accent);
+  background: var(--surface-2);
 }
 
-.artist-chip[aria-pressed="true"] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
+#artist-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* 展開後的選項清單用實色，避免在 Windows 上變成白底白字 */
+#artist-select option,
+#artist-select optgroup {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.artist-meta {
+  margin: 8px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .modes {

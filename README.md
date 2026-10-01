@@ -1,10 +1,18 @@
 # 🎤 猜歌王
 
-猜歌小遊戲，純前端、不需要安裝任何東西。可以選的歌手：
+猜歌小遊戲，純前端、不需要安裝任何東西。首頁用下拉選單選歌手，共 57 位，依地區分組：
 
-Lady Gaga、Michael Jackson、Bruno Mars、蕭煌奇、Ariana Grande、YOASOBI
+| 地區 | 歌手 |
+| --- | --- |
+| 台灣 | 周杰倫、五月天、蔡依林、張惠妹、田馥甄、林宥嘉、告五人、盧廣仲、徐佳瑩、楊丞琳、蕭煌奇 |
+| 台語 | 江蕙、伍佰、茄子蛋、謝金燕、陳雷 |
+| 日本 | YOASOBI、米津玄師、Mrs. GREEN APPLE、Official髭男dism、King Gnu、Ado、あいみょん、back number、宇多田ヒカル、Vaundy、LiSA |
+| 歐美 | Lady Gaga、Michael Jackson、Bruno Mars、Ariana Grande、Taylor Swift、Ed Sheeran、Billie Eilish、The Weeknd、Adele、Dua Lipa、Coldplay、Beyoncé、Justin Bieber、Olivia Rodrigo |
+| 中國 | 王菲、那英、周深、毛不易、李榮浩、華晨宇、張靚穎、薛之謙、李健、朴樹 |
+| 印度 | Arijit Singh、A.R. Rahman、Shreya Ghoshal |
+| 泰國 | Bodyslam、Palmy、Phum Viphurit |
 
-網址後面加 `#歌手代號` 可以直接指定歌手，例如 `#yoasobi`、`#mj`、`#hsiao`。
+網址後面加 `#歌手代號` 可以直接指定歌手，例如 `#yoasobi`、`#mj`、`#jay`（代號見 `js/artists.js` 的 `id`）。
 
 ## 玩法
 
@@ -45,7 +53,7 @@ js/game.js      遊戲流程與計分
 
 ## 新增歌手
 
-在 `js/artists.js` 加一筆資料即可，聽歌模式馬上能玩；想要手寫線索的話，再照 `js/clues/gaga.js` 的格式新增檔案，並在 `index.html` 引入。
+在 `js/artists.js` 加一筆資料（`region` 地區、`terms` 搜尋關鍵字、`match` 比對 iTunes 歌手名稱的規則）即可，聽歌模式馬上能玩；想要手寫線索的話，再照 `js/clues/gaga.js` 的格式新增檔案，並在 `index.html` 引入。
 
 題庫格式（`defineClues`）：`t` 歌名、`a` 專輯、`y` 年份、`f` 冷知識、`e` emoji、`w` 自訂第二條線索、`deep: 1` 標記為冷門歌。
 

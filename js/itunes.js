@@ -7,7 +7,9 @@
   // iTunes API 大約每分鐘 20 次請求，一位歌手控制在 8 次以內
   const ALBUMS_PER_REQUEST = 10;
   const MAX_ALBUMS = 60;
-  const EXCLUDE = /remix|live|karaoke|instrumental|acoustic|demo|a cappella|acapella|version|edit\)|mix\)|commentary|interview|dialogue|伴奏|純音樂|現場|對白/i;
+  const EXCLUDE = /remix|live|karaoke|instrumental|acoustic|demo|a cappella|acapella|edit\)|mix\)|commentary|interview|dialogue|off vocal|tv size|伴奏|純音樂|現場|對白/i;
+  // 只排除這些變體版本；像 "10 Minute Version"、"Taylor's Version" 是正式版本要保留
+  const VARIANT_VERSION = /(radio|single|album|extended|english|japanese|korean|chinese|mandarin|cantonese|piano|orchestra|orchestral|strings|band|clean|short|tv|anime|film|movie|sped up|slowed)\s+(version|ver\.?)/i;
   // 短於 45 秒的多半是對白、開場或間奏，不適合拿來猜
   const MIN_DURATION_MS = 45000;
 
@@ -64,12 +66,16 @@
       .toLowerCase()
       .replace(/\s*[\(\[（【].*?[\)\]）】]/g, "")
       .replace(/\s+-\s+.*$/, "")
-      .replace(/[^\p{L}\p{N}]+/gu, " ")
+      // \p{M} 保留泰文、印地文的母音與聲調符號
+      .replace(/[^\p{L}\p{M}\p{N}]+/gu, " ")
       .trim();
   }
 
   function displayTitle(title) {
-    return title.replace(/\s*[\(\[](feat|with)\.?[^\)\]]*[\)\]]/gi, "").trim();
+    return title
+      .replace(/\s*[\(\[](feat|with)\.?[^\)\]]*[\)\]]/gi, "")
+      .replace(/\s*[\(\[](taylor['’]s version|from the vault)[\)\]]/gi, "")
+      .trim();
   }
 
   const isSingle = (album) => /\s-\s(single|ep)$/i.test(album || "");
@@ -87,7 +93,8 @@
     for (const r of results || []) {
       if (r.kind !== "song" || !r.previewUrl || !r.trackName) continue;
       if (!artist.match.test(r.artistName || "")) continue;
-      if (EXCLUDE.test(r.trackName) || /karaoke|tribute/i.test(r.collectionName || "")) continue;
+      if (EXCLUDE.test(r.trackName) || VARIANT_VERSION.test(r.trackName)) continue;
+      if (/karaoke|tribute/i.test(r.collectionName || "")) continue;
       if (artist.excludeCollection && artist.excludeCollection.test(r.collectionName || "")) continue;
       if (artist.excludeTrack && artist.excludeTrack.test(r.trackName)) continue;
       const allowShort = artist.allowShort && artist.allowShort.test(r.trackName);
@@ -174,28 +181,37 @@
     return pages.flatMap((p) => (p.results || []).filter((r) => r.wrapperType === "track"));
   }
 
+  // 依序試每個地區商店與每個搜尋關鍵字（中文名、英文名），找到歌手就停
   async function fetchSongs(artist, onProgress) {
     let lastError;
+    let anyResponse = false;
     for (const country of artist.countries) {
-      try {
-        const data = await request(buildUrl(artist.term, country));
-        const searchResults = (data.results || []).map((r) => ({ ...r, __fromSearch: true }));
-        let albumTracks = [];
-        const artistId = findArtistId(searchResults, artist);
-        if (artistId) {
+      for (const term of artist.terms) {
+        try {
+          const data = await request(buildUrl(term, country));
+          anyResponse = true;
+          const searchResults = (data.results || []).map((r) => ({ ...r, __fromSearch: true }));
+          const artistId = findArtistId(searchResults, artist);
+          if (!artistId) continue;
+          let albumTracks = [];
           try {
             albumTracks = await fetchAlbumTracks(artistId, artist, country, onProgress);
           } catch (err) {
             console.warn("抓不到完整曲目，只用搜尋結果", err);
           }
+          const songs = toSongs([...searchResults, ...albumTracks], artist);
+          if (songs.length >= 4) return songs;
+        } catch (err) {
+          lastError = err;
         }
-        const songs = toSongs([...searchResults, ...albumTracks], artist);
-        if (songs.length >= 4) return songs;
-      } catch (err) {
-        lastError = err;
       }
     }
-    throw lastError || new Error("找不到足夠的歌曲");
+    if (anyResponse) {
+      const err = new Error(`iTunes 上找不到足夠的 ${artist.name} 歌曲`);
+      err.code = "NOT_FOUND";
+      throw err;
+    }
+    throw lastError || new Error("連不上 iTunes");
   }
 
   window.ITunes = { fetchSongs, normalizeTitle, isSingle };

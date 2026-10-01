@@ -10,8 +10,10 @@
   const $ = (id) => document.getElementById(id);
   const screens = ["home", "loading", "play", "result"];
 
+  const DEFAULT_ARTIST = window.ARTISTS.find((a) => a.id === "gaga");
+
   const state = {
-    artist: window.ARTISTS[0],
+    artist: DEFAULT_ARTIST,
     mode: "audio",
     totalRounds: 10,
     pool: [],
@@ -104,7 +106,7 @@
 
   // ---------- 選歌手 ----------
   function selectArtist(id, { remember = true } = {}) {
-    const artist = window.ARTISTS.find((a) => a.id === id) || window.ARTISTS[0];
+    const artist = window.ARTISTS.find((a) => a.id === id) || DEFAULT_ARTIST;
     state.artist = artist;
     if (remember) storageSet("guess-artist", artist.id);
 
@@ -121,25 +123,31 @@
       ? "看冷知識、專輯與 emoji 猜歌名。離線也能玩。"
       : "看發行年份、專輯與封面猜歌名。需要連網。";
 
-    for (const chip of document.querySelectorAll(".artist-chip")) {
-      chip.setAttribute("aria-pressed", String(chip.dataset.artist === artist.id));
-    }
+    $("artist-select").value = artist.id;
+    const region = window.REGIONS.find((r) => r.id === artist.region);
+    $("artist-meta").textContent = hasCuratedClues(artist)
+      ? `${region.name}・線索模式有 ${window.CLUES[artist.id].length} 首手寫題目`
+      : `${region.name}・線索模式由 iTunes 資料自動出題`;
     if (location.hash.slice(1) !== artist.id) history.replaceState(null, "", `#${artist.id}`);
     renderBest();
   }
 
+  // 依地區分組的下拉選單
   function renderArtists() {
-    const box = $("artist-list");
-    for (const artist of window.ARTISTS) {
-      const chip = document.createElement("button");
-      chip.className = "artist-chip";
-      chip.dataset.artist = artist.id;
-      chip.setAttribute("aria-pressed", "false");
-      chip.innerHTML = `<span aria-hidden="true">${artist.icon}</span><span></span>`;
-      chip.lastChild.textContent = artist.name;
-      chip.addEventListener("click", () => selectArtist(artist.id));
-      box.appendChild(chip);
+    const select = $("artist-select");
+    for (const region of window.REGIONS) {
+      const artists = window.ARTISTS.filter((a) => a.region === region.id);
+      const group = document.createElement("optgroup");
+      group.label = `${region.icon} ${region.name}（${artists.length}）`;
+      for (const artist of artists) {
+        const option = document.createElement("option");
+        option.value = artist.id;
+        option.textContent = artist.name;
+        group.appendChild(option);
+      }
+      select.appendChild(group);
     }
+    select.addEventListener("change", () => selectArtist(select.value));
   }
 
   // ---------- 自動線索（沒有手寫題庫的歌手） ----------
@@ -173,7 +181,7 @@
 
   function readSongCache(artist) {
     try {
-      const cached = JSON.parse(storageGet(`guess-songs-v3-${artist.id}`) || "null");
+      const cached = JSON.parse(storageGet(`guess-songs-v4-${artist.id}`) || "null");
       if (!cached || Date.now() - cached.savedAt > CACHE_TTL) return null;
       // JSON 存不了 Infinity，存成 null
       return cached.songs.map((s) => ({ ...s, rank: s.rank ?? Infinity }));
@@ -188,7 +196,7 @@
     if (!songs) {
       const onProgress = (msg) => ($("loading-text").textContent = msg);
       songs = await window.ITunes.fetchSongs(artist, onProgress);
-      storageSet(`guess-songs-v3-${artist.id}`, JSON.stringify({ savedAt: Date.now(), songs }));
+      storageSet(`guess-songs-v4-${artist.id}`, JSON.stringify({ savedAt: Date.now(), songs }));
     }
     itunesCache.set(artist.id, songs);
     return songs;
@@ -212,9 +220,16 @@
       } catch (err) {
         console.error(err);
         const canFallback = mode === "audio" && hasCuratedClues(artist);
-        $("loading-text").textContent = canFallback
-          ? "連不上 iTunes，抓不到試聽片段。要不要改玩線索模式？"
-          : "連不上 iTunes，抓不到歌曲資料。請確認網路連線後再試一次。";
+        const reason =
+          err.code === "NOT_FOUND"
+            ? `iTunes 上找不到足夠的 ${artist.name} 歌曲，可能是這位歌手沒有在 Apple Music 上架。`
+            : "連不上 iTunes，抓不到歌曲資料。";
+        const next = canFallback
+          ? "要不要改玩線索模式？"
+          : err.code === "NOT_FOUND"
+            ? "換一位歌手試試看吧。"
+            : "請確認網路連線後再試一次。";
+        $("loading-text").textContent = reason + next;
         $("btn-loading-clue").classList.toggle("hidden", !canFallback);
         $("loading-actions").classList.remove("hidden");
         return;
