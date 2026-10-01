@@ -1050,7 +1050,8 @@
   // iTunes 的封面網址可以直接改尺寸；縮圖用小張，畫成績圖用大張
   const coverUrl = (url, size) => url.replace(/\d+x\d+(bb)?\.(jpg|png|webp)/, `${size}x${size}bb.jpg`);
   const coverImages = new Map();
-  const shareBg = { covers: [], selected: null };
+  // 預設用第一張封面；picked 表示玩家自己點過，之後就不再自動換
+  const shareBg = { covers: [], selected: null, picked: false };
 
   // 這一局出現過的專輯排前面，不夠再從歌手的歌曲清單補熱門專輯
   function coverChoices(extra = []) {
@@ -1105,11 +1106,7 @@
         img.crossOrigin = "anonymous";
         img.src = coverUrl(c.url, 200);
         // 載不到（或不允許跨網域使用）的封面就不提供，反正也畫不進成績圖
-        img.addEventListener("error", () => {
-          shareBg.covers = shareBg.covers.filter((x) => x !== c);
-          btn.remove();
-          $("share-bg").classList.toggle("hidden", !shareBg.covers.length);
-        });
+        img.addEventListener("error", () => dropCover(c.url));
         btn.appendChild(img);
       } else {
         btn.classList.add("bg-vinyl");
@@ -1120,11 +1117,34 @@
     $("share-bg").classList.toggle("hidden", !shareBg.covers.length);
   }
 
+  function markSelected() {
+    for (const b of $("share-bgs").children) b.setAttribute("aria-checked", String(b.dataset.url === (shareBg.selected || "")));
+  }
+
   function selectBg(url) {
+    shareBg.picked = true;
     if (url === shareBg.selected) return;
     shareBg.selected = url;
-    for (const b of $("share-bgs").children) b.setAttribute("aria-checked", String(b.dataset.url === (url || "")));
+    markSelected();
     renderShare();
+  }
+
+  // 沒選過背景時，自動用第一張封面；沒有封面就用唱片
+  function selectDefaultBg() {
+    if (shareBg.picked) return false;
+    const next = shareBg.covers[0]?.url || null;
+    if (next === shareBg.selected) return false;
+    shareBg.selected = next;
+    markSelected();
+    return true;
+  }
+
+  // 載不到的封面拿掉；拿掉的剛好是自動選的那張，就換下一張
+  function dropCover(url) {
+    shareBg.covers = shareBg.covers.filter((x) => x.url !== url);
+    $("share-bgs").querySelector(`[data-url="${CSS.escape(url)}"]`)?.remove();
+    $("share-bg").classList.toggle("hidden", !shareBg.covers.length);
+    if (shareBg.selected === url && selectDefaultBg()) renderShare();
   }
 
   // 只用到手寫題庫、沒抓過 iTunes 的話，背景候選會是空的；背景再查一次熱門歌補封面
@@ -1135,6 +1155,7 @@
       if (!$("share-dialog").open) return;
       shareBg.covers = coverChoices(songs);
       renderBgChoices();
+      if (selectDefaultBg()) renderShare();
     } catch {
       /* 查不到就只有唱片背景 */
     }
@@ -1143,7 +1164,8 @@
   // 打開預覽視窗，當場把成績畫成限動尺寸的圖
   function share() {
     shareBg.covers = coverChoices();
-    shareBg.selected = null;
+    shareBg.picked = false;
+    shareBg.selected = shareBg.covers[0]?.url || null;
     $("share-img").classList.add("hidden");
     renderBgChoices();
     $("share-dialog").showModal();
@@ -1165,14 +1187,20 @@
     $("btn-share-image").disabled = true;
     $("btn-download").removeAttribute("href");
 
+    // 載圖途中選擇可能被換掉，先記下這次要畫哪一張
+    const url = shareBg.selected;
     let cover = null;
-    if (shareBg.selected) {
+    if (url) {
       try {
-        cover = await loadImage(coverUrl(shareBg.selected, 1000));
+        cover = await loadImage(coverUrl(url, 1000));
       } catch {
         // 大張載不到就退回縮圖那張，再不行就用唱片
-        cover = await loadImage(coverUrl(shareBg.selected, 200)).catch(() => null);
-        if (!cover && token === shareToken) toast("這張封面載不下來，先用唱片背景");
+        cover = await loadImage(coverUrl(url, 200)).catch(() => null);
+        if (!cover && token === shareToken) {
+          // 自動選的封面載不到就默默換下一張；玩家自己點的才提示
+          if (!shareBg.picked) return dropCover(url);
+          toast("這張封面載不下來，先用唱片背景");
+        }
       }
       if (token !== shareToken) return;
     }
