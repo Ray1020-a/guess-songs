@@ -197,7 +197,14 @@
 
   async function render(data) {
     await loadFonts();
-    const { artist, mode, levelName, score, max, rank, history, isRecord, url } = data;
+    const { artist, mode, modeName, levelName, score, max, rank, history, isRecord, url } = data;
+    // 聽歌模式看秒數；其他模式看用了幾段線索或提示
+    const unit =
+      mode === "audio"
+        ? { stat: "平均聽", suffix: "秒", legend: "格子裡是每題聽了幾秒就猜中" }
+        : mode === "clue"
+          ? { stat: "平均線索", suffix: "條", legend: "格子裡是每題用了幾條線索才猜中" }
+          : { stat: "平均提示", suffix: "段", legend: "格子裡是每題看了幾段提示才答對" };
     const accent = artist.colors.accent;
     const accent2 = artist.colors.accent2;
     const canvas = document.createElement("canvas");
@@ -209,9 +216,13 @@
 
     ctx.fillStyle = C.muted;
     ctx.font = font(600, 30, MONO);
-    spaced(ctx, "GUESS THE SONG", W / 2, 190, 10);
+    spaced(ctx, "GUESS THE SONG", W / 2, 170, 10);
+    ctx.fillStyle = C.text;
+    ctx.font = font(700, 32, BODY);
+    ctx.textAlign = "center";
+    ctx.fillText(modeName, W / 2, 222);
 
-    drawVinyl(ctx, W / 2, 440, 200, accent, accent2, artist.icon);
+    drawVinyl(ctx, W / 2, 460, 190, accent, accent2, artist.icon);
 
     fitText(ctx, window.withName(artist.short, "猜歌王"), W / 2, 760, {
       weight: 800,
@@ -257,7 +268,7 @@
     const avg = correct.length ? correct.reduce((sum, h) => sum + (mode === "audio" ? h.seconds : h.stage + 1), 0) / correct.length : null;
     const stats = [
       ["答對", `${correct.length} / ${history.length}`],
-      mode === "audio" ? ["平均聽", avg == null ? "—" : `${trim(avg)} 秒`] : ["平均線索", avg == null ? "—" : `${trim(avg)} 條`],
+      [unit.stat, avg == null ? "—" : `${trim(avg)} ${unit.suffix}`],
       ["難度", levelName],
     ];
     const cellW = 300;
@@ -277,7 +288,7 @@
     ctx.fillStyle = C.faint;
     ctx.font = font(500, 26, BODY);
     ctx.textAlign = "center";
-    ctx.fillText(mode === "audio" ? "格子裡是每題聽了幾秒就猜中" : "格子裡是每題用了幾條線索才猜中", W / 2, gridBottom + 52);
+    ctx.fillText(unit.legend, W / 2, gridBottom + 52);
 
     ctx.fillStyle = C.text;
     ctx.font = font(900, 44, BODY);

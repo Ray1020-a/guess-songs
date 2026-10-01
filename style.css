@@ -691,21 +691,33 @@ kbd {
   color: var(--accent);
 }
 
+/* 模式清單做成唱片的 A 面、B 面曲目 */
 .modes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.side-label {
+  margin: 14px 0 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.side-label:first-child {
+  margin-top: 0;
 }
 
 .mode-card {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+  align-items: center;
+  gap: 14px;
   min-width: 0;
   text-align: left;
-  padding: 18px 16px 16px;
+  padding: 14px 16px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -713,35 +725,57 @@ kbd {
 }
 
 .mode-card:hover {
-  transform: translateY(-2px);
+  transform: translateX(3px);
   border-color: var(--accent);
   background: var(--surface-2);
 }
 
-.mode-icon {
-  width: 26px;
-  height: 26px;
+.mode-num {
+  flex: none;
+  width: 22px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--faint);
+}
+
+.mode-card:hover .mode-num {
   color: var(--accent);
-  margin-bottom: 4px;
+}
+
+.mode-icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  color: var(--accent);
+}
+
+.mode-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
 }
 
 .mode-name {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 900;
 }
 
 .mode-desc {
   color: var(--muted);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 .mode-best {
-  margin-top: auto;
-  padding-top: 6px;
+  flex: none;
+  max-width: 34%;
+  text-align: right;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
+  line-height: 1.4;
   color: var(--accent);
 }
 
@@ -986,6 +1020,111 @@ kbd {
 .step.on {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* ---------- 歌詞模式 ---------- */
+.lyric-song {
+  margin: 0;
+  font-weight: 900;
+  font-size: 18px;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.lyric-card {
+  width: 100%;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 22px;
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+}
+
+.lyric-line {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  animation: rise 0.3s ease;
+}
+
+.lyric-dim {
+  color: var(--muted);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.lyric-meta {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.blank {
+  display: inline-block;
+  margin: 0 3px;
+  padding: 0 6px;
+  border-bottom: 2px solid var(--accent);
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
+.blank.filled,
+.lyric-next.filled {
+  color: var(--good);
+  border-color: var(--good);
+}
+
+/* 接唱：還沒唱到的句子是暗的，唱到的那句亮起來 */
+.karaoke {
+  color: var(--faint);
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.karaoke.singing {
+  color: var(--accent);
+  transform: translateX(4px);
+}
+
+.karaoke.sung {
+  color: var(--text);
+}
+
+.lyric-next {
+  color: var(--muted);
+  font-size: 17px;
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  visibility: hidden;
+}
+
+.lyric-card.waiting .lyric-next,
+.lyric-next.filled {
+  visibility: visible;
+}
+
+.lyric-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.lyric-credit {
+  margin: 0;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.lyric-credit a {
+  color: var(--muted);
 }
 
 .clue-list {

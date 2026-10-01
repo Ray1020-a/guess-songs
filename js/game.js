@@ -6,6 +6,12 @@
   // iTunes 搜尋結果前幾名視為熱門歌
   const HIT_RANK = 30;
   const LEVEL_NAMES = { hits: "經典", all: "混合", deep: "冷門" };
+  const MODE_NAMES = { audio: "聽歌猜歌", clue: "線索猜歌", lyric: "歌詞猜歌", fill: "歌詞填空", next: "接唱" };
+  const LYRIC_MODES = ["lyric", "fill", "next"];
+  // 填空、接唱的選項是歌詞片段，正確答案用這個 key
+  const ANSWER_KEY = "__answer";
+  const isLyricMode = (mode) => LYRIC_MODES.includes(mode);
+  const isTextMode = (mode) => mode === "fill" || mode === "next";
 
   const $ = (id) => document.getElementById(id);
   const screens = ["home", "loading", "play", "result"];
@@ -467,13 +473,19 @@
     }
 
     state.pool = filterByLevel(state.pool, selectedLevel());
-    state.queue = shuffle(state.pool).slice(0, Math.min(state.totalRounds, state.pool.length));
+    if (isLyricMode(mode)) {
+      const ok = await buildLyricQueue(mode);
+      if (!ok) return;
+    } else {
+      state.queue = shuffle(state.pool).slice(0, Math.min(state.totalRounds, state.pool.length));
+    }
     state.totalRounds = state.queue.length;
     state.round = 0;
     state.score = 0;
     state.history = [];
     $("audio-panel").classList.toggle("hidden", mode !== "audio");
     $("clue-panel").classList.toggle("hidden", mode !== "clue");
+    $("lyric-panel").classList.toggle("hidden", !isLyricMode(mode));
     show("play");
     nextRound();
   }
@@ -495,7 +507,10 @@
 
     renderOptions(song);
 
-    if (state.mode === "audio") {
+    if (isLyricMode(state.mode)) {
+      $("btn-hint").disabled = false;
+      renderLyric();
+    } else if (state.mode === "audio") {
       state.audio = new Audio(song.previewUrl);
       state.audio.preload = "auto";
       state.audio.addEventListener("ended", () => ($("play-icon").textContent = "▶"));
@@ -517,8 +532,17 @@
   }
 
   function renderOptions(song) {
-    const distractors = shuffle(state.pool.filter((s) => s.key !== song.key)).slice(0, 3);
-    const options = shuffle([song, ...distractors]);
+    let options;
+    if (isTextMode(state.mode)) {
+      const q = song.lyricQ;
+      options = shuffle([
+        { key: ANSWER_KEY, title: q.answer },
+        ...q.distractors.map((t, i) => ({ key: `__d${i}`, title: t })),
+      ]);
+    } else {
+      const distractors = shuffle(state.pool.filter((s) => s.key !== song.key)).slice(0, 3);
+      options = shuffle([song, ...distractors]);
+    }
     const box = $("options");
     box.innerHTML = "";
     options.forEach((opt, i) => {
@@ -599,6 +623,7 @@
   }
 
   function stopAudio() {
+    stopKaraoke();
     cancelAnimationFrame(state.rafId);
     if (state.audio) {
       state.audio.pause();
@@ -644,12 +669,178 @@
     updateWorth();
   }
 
+  // ---------- 歌詞模式 ----------
+  const LYRIC_BUILDERS = {
+    lyric: (lyrics, song) => window.Lyrics.guessTitleQuestion(lyrics.lines, song),
+    fill: (lyrics) => window.Lyrics.fillQuestion(lyrics.lines),
+    next: (lyrics) => window.Lyrics.nextLineQuestion(lyrics.lines, lyrics.synced),
+  };
+
+  // 一首一首去 LRCLIB 找歌詞，找到夠用的就出題，湊滿題數為止
+  async function buildLyricQueue(mode) {
+    const want = Math.min(state.totalRounds, state.pool.length);
+    const candidates = shuffle(state.pool).slice(0, Math.max(want * 3, 12));
+    const queue = [];
+    let tried = 0;
+    let failures = 0;
+    let i = 0;
+    const worker = async () => {
+      while (queue.length < want && i < candidates.length) {
+        const song = candidates[i++];
+        try {
+          const lyrics = await window.Lyrics.fetchLyrics(song, state.artist.name);
+          if (lyrics && queue.length < want) {
+            const q = LYRIC_BUILDERS[mode](lyrics, song);
+            if (q) queue.push({ ...song, lyricQ: q });
+          }
+        } catch (err) {
+          failures++;
+          console.warn(err);
+        }
+        tried++;
+        $("loading-text").textContent = `正在翻歌詞本……已找到 ${queue.length} / ${want} 首`;
+      }
+    };
+    $("loading-text").textContent = "正在翻歌詞本……";
+    await Promise.all([worker(), worker(), worker()]);
+
+    if (queue.length < Math.min(3, want)) {
+      const reason =
+        failures && failures === tried
+          ? "連不上歌詞資料庫 LRCLIB，請確認網路後再試一次。"
+          : `找不到夠多 ${state.artist.name} 的歌詞${mode === "next" ? "（接唱需要有時間軸的歌詞）" : ""}，換一位歌手或換個模式試試看吧。`;
+      $("loading-text").textContent = reason;
+      $("btn-loading-clue").classList.add("hidden");
+      $("loading-actions").classList.remove("hidden");
+      return false;
+    }
+    if (queue.length < want) toast(`只找到 ${queue.length} 首有歌詞的歌，這局就玩 ${queue.length} 題`);
+    state.queue = queue;
+    return true;
+  }
+
+  const HINT_LABELS = {
+    lyric: ["再看一句", "看專輯資訊"],
+    fill: ["看上一句", "看下一句"],
+    next: ["看下一句的開頭", "看下一句有多長"],
+  };
+
+  function lyricLine(text, className = "") {
+    const p = document.createElement("p");
+    p.className = `lyric-line ${className}`.trim();
+    p.textContent = text;
+    return p;
+  }
+
+  function stopKaraoke() {
+    for (const t of state.karaokeTimers || []) clearTimeout(t);
+    state.karaokeTimers = [];
+  }
+
+  // 接唱：三句歌詞照原曲間隔一句句亮起
+  function playKaraoke() {
+    stopKaraoke();
+    const rows = [...$("lyric-card").querySelectorAll(".karaoke")];
+    rows.forEach((r) => r.classList.remove("sung", "singing"));
+    $("lyric-card").classList.remove("waiting");
+    let at = 300;
+    rows.forEach((row, k) => {
+      state.karaokeTimers.push(
+        setTimeout(() => {
+          rows.forEach((r) => r.classList.remove("singing"));
+          row.classList.add("singing");
+          if (k > 0) rows[k - 1].classList.add("sung");
+        }, at),
+      );
+      at += state.current.lyricQ.shown[k].hold * 1000;
+    });
+    state.karaokeTimers.push(
+      setTimeout(() => {
+        rows.forEach((r) => r.classList.add("sung"));
+        rows.at(-1)?.classList.remove("singing");
+        $("lyric-card").classList.add("waiting");
+      }, at),
+    );
+  }
+
+  function renderLyric({ reveal = false } = {}) {
+    const song = state.current;
+    const q = song.lyricQ;
+    const card = $("lyric-card");
+    const mode = state.mode;
+    $("lyric-song").textContent = mode === "lyric" ? "這是哪一首歌？" : `〈${song.title}〉`;
+
+    if (mode === "lyric") {
+      card.innerHTML = "";
+      q.lines.slice(0, state.stage === 0 && !reveal ? 1 : 2).forEach((t) => card.appendChild(lyricLine(t)));
+      if (state.stage >= 2 || reveal) {
+        const meta = [song.album && `《${song.album}》`, song.year].filter(Boolean).join("・");
+        if (meta) card.appendChild(lyricLine(meta, "lyric-meta"));
+      }
+    } else if (mode === "fill") {
+      card.innerHTML = "";
+      if (state.stage >= 1 || reveal) card.appendChild(lyricLine(q.prev, "lyric-dim"));
+      const line = lyricLine("");
+      line.append(q.before);
+      const blank = document.createElement("span");
+      blank.className = reveal ? "blank filled" : "blank";
+      blank.textContent = reveal ? q.answer : "＿".repeat(Math.max(2, Math.min(4, [...q.answer].length)));
+      line.append(blank, q.after);
+      card.appendChild(line);
+      if (state.stage >= 2 || reveal) card.appendChild(lyricLine(q.next, "lyric-dim"));
+    } else if (mode === "next") {
+      if (!card.querySelector(".karaoke") || card.dataset.song !== String(song.id)) {
+        card.innerHTML = "";
+        card.dataset.song = String(song.id);
+        q.shown.forEach((l) => card.appendChild(lyricLine(l.text, "karaoke")));
+        card.appendChild(lyricLine("", "lyric-next"));
+        playKaraoke();
+      }
+      const next = card.querySelector(".lyric-next");
+      if (reveal) {
+        stopKaraoke();
+        card.querySelectorAll(".karaoke").forEach((r) => r.classList.add("sung"));
+        next.textContent = q.answer;
+        next.classList.add("filled");
+      } else if (state.stage === 1) {
+        next.textContent = `${hintHead(q.answer)}……`;
+      } else if (state.stage >= 2) {
+        next.textContent = `${hintHead(q.answer)}${"＿".repeat(Math.max(0, hintLength(q.answer) - 1))}（共 ${hintLength(q.answer)} ${window.Lyrics.isCJK(q.answer) ? "個字" : "個字詞"}）`;
+      } else {
+        next.textContent = "下一句是？";
+      }
+    }
+
+    $("btn-replay").classList.toggle("hidden", mode !== "next" || reveal);
+    const labels = HINT_LABELS[mode];
+    const last = state.stage >= labels.length;
+    $("btn-hint").textContent = last ? "提示用完了" : labels[state.stage];
+    $("btn-hint").disabled = last || reveal;
+  }
+
+  // 接唱的提示：中日文露出第一個字，英文露出第一個字詞
+  function hintHead(text) {
+    return window.Lyrics.isCJK(text) ? [...text][0] : text.split(/\s+/)[0];
+  }
+
+  function hintLength(text) {
+    return window.Lyrics.isCJK(text) ? [...text.replace(/\s/g, "")].length : text.split(/\s+/).length;
+  }
+
+  function moreHint() {
+    if (state.answered || state.stage >= 2) return;
+    state.stage++;
+    renderLyric();
+    updateWorth();
+  }
+
   // ---------- 作答 ----------
   function answer(opt, btn) {
     if (state.answered) return;
     state.answered = true;
     const song = state.current;
-    const correct = opt.key === song.key;
+    const correctKey = isTextMode(state.mode) ? ANSWER_KEY : song.key;
+    const correct = opt.key === correctKey;
     const points = correct ? currentPoints() : 0;
     state.score += points;
     state.history.push({
@@ -663,13 +854,15 @@
 
     for (const b of $("options").querySelectorAll(".option")) {
       b.disabled = true;
-      if (b.dataset.key === song.key) b.classList.add("correct");
+      if (b.dataset.key === correctKey) b.classList.add("correct");
     }
     if (!correct) btn.classList.add("wrong");
 
     $("hud-score").textContent = state.score;
     $("btn-more").disabled = true;
     $("btn-clue").disabled = true;
+    $("btn-hint").disabled = true;
+    if (isLyricMode(state.mode)) renderLyric({ reveal: true });
 
     $("reveal-verdict").textContent = correct ? `答對了！+${points} 分` : "可惜，答錯了";
     $("reveal-verdict").className = "verdict " + (correct ? "good" : "bad");
@@ -737,7 +930,7 @@
   }
 
   function shareText() {
-    const modeName = state.mode === "audio" ? "聽歌猜歌" : "線索猜歌";
+    const modeName = MODE_NAMES[state.mode];
     const correctCount = state.history.filter((h) => h.correct).length;
     return `我在 ${window.withName(state.artist.short, "猜歌王")}（${modeName}）拿到 ${state.score} 分，答對 ${correctCount} / ${state.totalRounds} 題！⚡ 你能贏我嗎？`;
   }
@@ -759,6 +952,7 @@
       const canvas = await window.ShareCard.render({
         artist: state.artist,
         mode: state.mode,
+        modeName: MODE_NAMES[state.mode],
         levelName: state.lastResult.level,
         score: state.score,
         max: state.lastResult.max,
@@ -824,6 +1018,8 @@
   $("btn-play").addEventListener("click", () => playClip(!state.answered));
   $("btn-more").addEventListener("click", listenMore);
   $("btn-clue").addEventListener("click", moreClue);
+  $("btn-hint").addEventListener("click", moreHint);
+  $("btn-replay").addEventListener("click", playKaraoke);
   $("btn-next").addEventListener("click", () => {
     state.round++;
     nextRound();
